@@ -13,9 +13,9 @@ def load_data():
             "website_title": "My Awesome Developer Portfolio",
             "about_me": "Hello! I'm a software developer with a passion for building clean and efficient solutions. I specialize in web development and enjoy working with Python, JavaScript, and modern front-end frameworks. My goal is to create impactful and user-friendly applications.",
             "projects": [
-                {"title": "Project Alpha", "description": "A web application built with React and Node.js."},
-                {"title": "Project Beta", "description": "Mobile app development using Flutter."},
-                {"title": "Project Gamma", "description": "Data analysis project with Python and Pandas."}
+                {"title": "Project Alpha", "description": "A web application built with React and Node.js.", "url": "https://github.com/yourusername/project-alpha"}, # Added URL
+                {"title": "Project Beta", "description": "Mobile app development using Flutter.", "url": "https://github.com/yourusername/project-beta"}, # Added URL
+                {"title": "Project Gamma", "description": "Data analysis project with Python and Pandas.", "url": "https://github.com/yourusername/project-gamma"} # Added URL
             ],
             "experience": [
                 {"role": "Software Engineer", "company": "Tech Solutions Inc.", "period": "Jan 2022 - Present",
@@ -30,7 +30,7 @@ def load_data():
                 "github_url": "https://github.com/yourusername",
                 "linkedin_url": "https://linkedin.com/in/yourusername",
                 "bandcamp_url": "https://yourusername.bandcamp.com",
-                "kofi_url": "https://ko-fi.com/yourusername" # Added Ko-fi URL
+                "kofi_url": "https://ko-fi.com/yourusername"
             }
         }
         with open("website_data.json", "w", encoding="utf-8") as f:
@@ -218,7 +218,13 @@ template = """
             <ul class="space-y-4">
                 {% for project in projects %}
                 <li class="interactive-card p-4 rounded-lg shadow-md bg-gray-100 dark:bg-gray-800 relative overflow-hidden">
-                    <strong class="text-xl">{{ project.title }}</strong> - <span class="text-gray-600 dark:text-gray-400">{{ project.description }}</span>
+                    <strong class="text-xl">
+                        {% if project.url %}
+                            <a href="{{ project.url }}" target="_blank" rel="noopener noreferrer" class="hover:underline">{{ project.title }}</a>
+                        {% else %}
+                            {{ project.title }}
+                        {% endif %}
+                    </strong> - <span class="text-gray-600 dark:text-gray-400">{{ project.description }}</span>
                 </li>
                 {% endfor %}
             </ul>
@@ -234,7 +240,7 @@ template = """
                 <a href="{{ contact_info.github_url }}" class="text-gray-700 dark:text-white hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-300"><i class="fab fa-github fa-2x"></i></a>
                 <a href="{{ contact_info.linkedin_url }}" class="text-gray-700 dark:text-white hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-300"><i class="fab fa-linkedin fa-2x"></i></a>
                 <a href="{{ contact_info.bandcamp_url }}" class="text-gray-700 dark:text-white hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-300"><i class="fab fa-bandcamp fa-2x"></i></a>
-                <a href="{{ contact_info.kofi_url }}" class="text-gray-700 dark:text-white hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-300"><i class="fa fa-coffee fa-2x"></i></a> <!-- Changed to fa-coffee -->
+                <a href="{{ contact_info.kofi_url }}" class="text-gray-700 dark:text-white hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-300"><i class="fa fa-coffee fa-2x"></i></a>
             </div>
             <p class="mt-6 text-sm text-gray-500 dark:text-gray-400">&copy; 2025 Your Name</p>
         </div>
@@ -254,7 +260,7 @@ def index():
                                   projects=data["projects"],
                                   experience=data["experience"],
                                   skills=data["skills"],
-                                  contact_info=data.get("contact_info", {"github_url": "#", "linkedin_url": "#", "bandcamp_url": "#", "kofi_url": "#"})) # Pass contact info
+                                  contact_info=data.get("contact_info", {"github_url": "#", "linkedin_url": "#", "bandcamp_url": "#", "kofi_url": "#"}))
 
 
 def write_static_html():
@@ -265,7 +271,7 @@ def write_static_html():
                                       projects=data["projects"],
                                       experience=data["experience"],
                                       skills=data["skills"],
-                                      contact_info=data.get("contact_info", {"github_url": "#", "linkedin_url": "#", "bandcamp_url": "#", "kofi_url": "#"})) # Pass contact info
+                                      contact_info=data.get("contact_info", {"github_url": "#", "linkedin_url": "#", "bandcamp_url": "#", "kofi_url": "#"}))
     os.makedirs("output", exist_ok=True)
     with open("output/index.html", "w", encoding="utf-8") as f:
         f.write(rendered)
