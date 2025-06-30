@@ -28,7 +28,9 @@ def load_data():
             ],
             "contact_info": { # Added contact information
                 "github_url": "https://github.com/yourusername",
-                "linkedin_url": "https://linkedin.com/in/yourusername"
+                "linkedin_url": "https://linkedin.com/in/yourusername",
+                "bandcamp_url": "https://yourusername.bandcamp.com",
+                "kofi_url": "https://ko-fi.com/yourusername" # Added Ko-fi URL
             }
         }
         with open("website_data.json", "w", encoding="utf-8") as f:
@@ -231,6 +233,8 @@ template = """
             <div class="space-x-6">
                 <a href="{{ contact_info.github_url }}" class="text-gray-700 dark:text-white hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-300"><i class="fab fa-github fa-2x"></i></a>
                 <a href="{{ contact_info.linkedin_url }}" class="text-gray-700 dark:text-white hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-300"><i class="fab fa-linkedin fa-2x"></i></a>
+                <a href="{{ contact_info.bandcamp_url }}" class="text-gray-700 dark:text-white hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-300"><i class="fab fa-bandcamp fa-2x"></i></a>
+                <a href="{{ contact_info.kofi_url }}" class="text-gray-700 dark:text-white hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-300"><i class="fab fa-kofi fa-2x"></i></a> <!-- Added Ko-fi link -->
             </div>
             <p class="mt-6 text-sm text-gray-500 dark:text-gray-400">&copy; 2025 Your Name</p>
         </div>
@@ -250,7 +254,7 @@ def index():
                                   projects=data["projects"],
                                   experience=data["experience"],
                                   skills=data["skills"],
-                                  contact_info=data.get("contact_info", {"github_url": "#", "linkedin_url": "#"})) # Pass contact info
+                                  contact_info=data.get("contact_info", {"github_url": "#", "linkedin_url": "#", "bandcamp_url": "#", "kofi_url": "#"})) # Pass contact info
 
 
 def write_static_html():
@@ -261,7 +265,7 @@ def write_static_html():
                                       projects=data["projects"],
                                       experience=data["experience"],
                                       skills=data["skills"],
-                                      contact_info=data.get("contact_info", {"github_url": "#", "linkedin_url": "#"})) # Pass contact info
+                                      contact_info=data.get("contact_info", {"github_url": "#", "linkedin_url": "#", "bandcamp_url": "#", "kofi_url": "#"})) # Pass contact info
     os.makedirs("output", exist_ok=True)
     with open("output/index.html", "w", encoding="utf-8") as f:
         f.write(rendered)
