@@ -234,7 +234,7 @@ template = """
                 <a href="{{ contact_info.github_url }}" class="text-gray-700 dark:text-white hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-300"><i class="fab fa-github fa-2x"></i></a>
                 <a href="{{ contact_info.linkedin_url }}" class="text-gray-700 dark:text-white hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-300"><i class="fab fa-linkedin fa-2x"></i></a>
                 <a href="{{ contact_info.bandcamp_url }}" class="text-gray-700 dark:text-white hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-300"><i class="fab fa-bandcamp fa-2x"></i></a>
-                <a href="{{ contact_info.kofi_url }}" class="text-gray-700 dark:text-white hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-300"><i class="fab fa-kofi fa-2x"></i></a> <!-- Added Ko-fi link -->
+                <a href="{{ contact_info.kofi_url }}" class="text-gray-700 dark:text-white hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-300"><i class="fa fa-coffee fa-2x"></i></a> <!-- Changed to fa-coffee -->
             </div>
             <p class="mt-6 text-sm text-gray-500 dark:text-gray-400">&copy; 2025 Your Name</p>
         </div>
