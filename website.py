@@ -10,15 +10,16 @@ def load_data():
     # Create a dummy website_data.json if it doesn't exist for demonstration
     if not os.path.exists("website_data.json"):
         dummy_data = {
+            "website_title": "My Awesome Developer Portfolio", # Added website title
             "projects": [
                 {"title": "Project Alpha", "description": "A web application built with React and Node.js."},
                 {"title": "Project Beta", "description": "Mobile app development using Flutter."},
                 {"title": "Project Gamma", "description": "Data analysis project with Python and Pandas."}
             ],
             "experience": [
-                {"role": "Software Engineer", "period": "Jan 2022 - Present",
+                {"role": "Software Engineer", "company": "Tech Solutions Inc.", "period": "Jan 2022 - Present", # Added company
                  "details": "Developed and maintained web services using Python and Django."},
-                {"role": "Junior Developer", "period": "Jul 2020 - Dec 2021",
+                {"role": "Junior Developer", "company": "Innovate Co.", "period": "Jul 2020 - Dec 2021", # Added company
                  "details": "Assisted in front-end development with HTML, CSS, and JavaScript."}
             ],
             "skills": [
@@ -39,7 +40,7 @@ template = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Developer Portfolio</title>
+    <title>{{ website_title }}</title> <!-- Dynamic website title -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -179,7 +180,7 @@ template = """
             <ul class="space-y-4">
                 {% for job in experience %}
                 <li class="interactive-card p-4 rounded-lg shadow-md bg-gray-100 dark:bg-gray-800 relative overflow-hidden">
-                    <strong class="text-xl">{{ job.role }}</strong> - <span class="text-gray-600 dark:text-gray-400">{{ job.period }}</span><br>
+                    <strong class="text-xl">{{ job.role }}</strong> at <span class="font-semibold">{{ job.company }}</span> - <span class="text-gray-600 dark:text-gray-400">{{ job.period }}</span><br> <!-- Display company -->
                     <p class="mt-2">{{ job.details }}</p>
                 </li>
                 {% endfor %}
@@ -238,13 +239,19 @@ template = """
 @app.route("/")
 def index():
     data = load_data()
-    return render_template_string(template, projects=data["projects"], experience=data["experience"],
+    return render_template_string(template,
+                                  website_title=data.get("website_title", "Developer Portfolio"), # Pass website title
+                                  projects=data["projects"],
+                                  experience=data["experience"],
                                   skills=data["skills"])
 
 
 def write_static_html():
     data = load_data()
-    rendered = render_template_string(template, projects=data["projects"], experience=data["experience"],
+    rendered = render_template_string(template,
+                                      website_title=data.get("website_title", "Developer Portfolio"), # Pass website title
+                                      projects=data["projects"],
+                                      experience=data["experience"],
                                       skills=data["skills"])
     os.makedirs("output", exist_ok=True)
     with open("output/index.html", "w", encoding="utf-8") as f:
