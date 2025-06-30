@@ -11,7 +11,7 @@ def load_data():
     if not os.path.exists("website_data.json"):
         dummy_data = {
             "website_title": "My Awesome Developer Portfolio",
-            "about_me": "Hello! I'm a software developer with a passion for building clean and efficient solutions. I specialize in web development and enjoy working with Python, JavaScript, and modern front-end frameworks. My goal is to create impactful and user-friendly applications.", # Added About Me content
+            "about_me": "Hello! I'm a software developer with a passion for building clean and efficient solutions. I specialize in web development and enjoy working with Python, JavaScript, and modern front-end frameworks. My goal is to create impactful and user-friendly applications.",
             "projects": [
                 {"title": "Project Alpha", "description": "A web application built with React and Node.js."},
                 {"title": "Project Beta", "description": "Mobile app development using Flutter."},
@@ -25,7 +25,11 @@ def load_data():
             ],
             "skills": [
                 "Python", "JavaScript", "React", "Node.js", "Tailwind CSS", "Flask", "SQL", "Git", "Cloud Computing"
-            ]
+            ],
+            "contact_info": { # Added contact information
+                "github_url": "https://github.com/yourusername",
+                "linkedin_url": "https://linkedin.com/in/yourusername"
+            }
         }
         with open("website_data.json", "w", encoding="utf-8") as f:
             json.dump(dummy_data, f, indent=4)
@@ -225,8 +229,8 @@ template = """
             <h2 class="text-3xl font-bold mb-4">Contact</h2>
             <p class="mb-6">Feel free to connect with me on social media!</p>
             <div class="space-x-6">
-                <a href="https://github.com/yourusername" class="text-gray-700 dark:text-white hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-300"><i class="fab fa-github fa-2x"></i></a>
-                <a href="https://linkedin.com/in/yourusername" class="text-gray-700 dark:text-white hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-300"><i class="fab fa-linkedin fa-2x"></i></a>
+                <a href="{{ contact_info.github_url }}" class="text-gray-700 dark:text-white hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-300"><i class="fab fa-github fa-2x"></i></a>
+                <a href="{{ contact_info.linkedin_url }}" class="text-gray-700 dark:text-white hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-300"><i class="fab fa-linkedin fa-2x"></i></a>
             </div>
             <p class="mt-6 text-sm text-gray-500 dark:text-gray-400">&copy; 2025 Your Name</p>
         </div>
@@ -242,20 +246,22 @@ def index():
     data = load_data()
     return render_template_string(template,
                                   website_title=data.get("website_title", "Developer Portfolio"),
-                                  about_me=data.get("about_me", "Hello! I'm a software developer..."), # Pass About Me content
+                                  about_me=data.get("about_me", "Hello! I'm a software developer..."),
                                   projects=data["projects"],
                                   experience=data["experience"],
-                                  skills=data["skills"])
+                                  skills=data["skills"],
+                                  contact_info=data.get("contact_info", {"github_url": "#", "linkedin_url": "#"})) # Pass contact info
 
 
 def write_static_html():
     data = load_data()
     rendered = render_template_string(template,
                                       website_title=data.get("website_title", "Developer Portfolio"),
-                                      about_me=data.get("about_me", "Hello! I'm a software developer..."), # Pass About Me content
+                                      about_me=data.get("about_me", "Hello! I'm a software developer..."),
                                       projects=data["projects"],
                                       experience=data["experience"],
-                                      skills=data["skills"])
+                                      skills=data["skills"],
+                                      contact_info=data.get("contact_info", {"github_url": "#", "linkedin_url": "#"})) # Pass contact info
     os.makedirs("output", exist_ok=True)
     with open("output/index.html", "w", encoding="utf-8") as f:
         f.write(rendered)
