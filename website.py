@@ -32,10 +32,10 @@ def load_data():
         return json.load(f)
 
 
-# Tailwind CSS with Dark Mode and theme toggle logic + interactive animated background
+# Tailwind CSS with Dark Mode and theme toggle logic + interactive card spotlight effect
 template = """
 <!DOCTYPE html>
-<html lang="en"> <!-- Removed hardcoded 'dark' class -->
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -43,7 +43,7 @@ template = """
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
-            darkMode: 'class' // Ensure Tailwind is configured for class-based dark mode
+            darkMode: 'class'
         }
 
         // Function to toggle theme and save preference to localStorage
@@ -57,73 +57,31 @@ template = """
             }
         }
 
-        // Variable to hold the mousemove event listener function
-        let mouseMoveListener = null;
-
-        // Function to apply/remove the mousemove effect
-        function applyMouseMoveEffect(enable) {
-            const bg = document.getElementById('background-effect');
-            if (enable) {
-                if (!mouseMoveListener) { // Only add if not already added
-                    mouseMoveListener = function(event) {
-                        const x = event.clientX;
-                        const y = event.clientY;
-                        bg.style.background = `radial-gradient(circle at ${x}px ${y}px, rgba(59,130,246,0.15), transparent 60%)`;
-                    };
-                    document.addEventListener('mousemove', mouseMoveListener);
+        // Function to apply the interactive spotlight effect to cards
+        function applyInteractiveCardEffect() {
+            document.addEventListener('mousemove', e => {
+                const cards = document.querySelectorAll('.interactive-card');
+                for (const card of cards) {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    card.style.setProperty('--mouseX', `${x}px`);
+                    card.style.setProperty('--mouseY', `${y}px`);
                 }
-            } else {
-                if (mouseMoveListener) { // Only remove if exists
-                    document.removeEventListener('mousemove', mouseMoveListener);
-                    mouseMoveListener = null;
-                    bg.style.background = 'none'; // Clear background when disabled
-                }
-            }
+            });
         }
 
-        // Function to toggle mousemove effect and save preference to localStorage
-        function toggleMouseMoveEffect() {
-            const isEnabled = localStorage.getItem('mouseEffect') !== 'disabled';
-            if (isEnabled) {
-                applyMouseMoveEffect(false);
-                localStorage.setItem('mouseEffect', 'disabled');
-            } else {
-                applyMouseMoveEffect(true);
-                localStorage.setItem('mouseEffect', 'enabled');
-            }
-            // Update button text
-            updateMouseMoveButtonText();
-        }
-
-        // Function to update the mousemove button text
-        function updateMouseMoveButtonText() {
-            const button = document.getElementById('toggle-mouse-effect-button');
-            if (button) {
-                const isEnabled = localStorage.getItem('mouseEffect') !== 'disabled';
-                button.textContent = isEnabled ? 'Disable Mouse Effect' : 'Enable Mouse Effect';
-            }
-        }
-
-
-        // On page load, apply theme and mouse effect based on localStorage or system preference
+        // On page load, apply theme and initialize effects
         document.addEventListener('DOMContentLoaded', () => {
-            // Apply theme
+            // Apply theme based on localStorage or system preference
             if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                 document.documentElement.classList.add('dark');
             } else {
                 document.documentElement.classList.remove('dark');
             }
 
-            // Apply mouse effect
-            const storedMouseEffect = localStorage.getItem('mouseEffect');
-            if (storedMouseEffect === 'disabled') {
-                applyMouseMoveEffect(false);
-            } else {
-                // Default to enabled if no preference or 'enabled'
-                applyMouseMoveEffect(true);
-            }
-            // Update button text after initial load
-            updateMouseMoveButtonText();
+            // Initialize the interactive card effect
+            applyInteractiveCardEffect();
         });
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -131,20 +89,49 @@ template = """
         html {
             scroll-behavior: smooth;
         }
-        .background-effect {
-            position: fixed;
-            top: 0;
+
+        /* Styles for the interactive card spotlight effect */
+        .interactive-card::before {
+            content: "";
+            position: absolute;
             left: 0;
+            top: 0;
             width: 100%;
             height: 100%;
-            z-index: -1;
-            pointer-events: none;
-            transition: background 0.1s ease-out; /* Smooth transition for background effect */
+            border-radius: inherit; /* Match the parent's border-radius */
+            /* The spotlight gradient, positioned by JS */
+            background: radial-gradient(
+                400px circle at var(--mouseX) var(--mouseY),
+                rgba(255, 255, 255, 0.2),
+                transparent 40%
+            );
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            z-index: 1; /* Sit above the card background but below content */
+        }
+
+        /* In dark mode, we can use a slightly different effect if desired */
+        .dark .interactive-card::before {
+             background: radial-gradient(
+                400px circle at var(--mouseX) var(--mouseY),
+                rgba(255, 255, 255, 0.1), /* More subtle glow for dark background */
+                transparent 40%
+            );
+        }
+
+        /* Show the effect on hover */
+        .interactive-card:hover::before {
+            opacity: 1;
+        }
+
+        /* Ensure card content (text, etc.) sits above the spotlight effect */
+        .interactive-card > * {
+            position: relative;
+            z-index: 2;
         }
     </style>
 </head>
 <body class="bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100 font-sans">
-    <div class="background-effect" id="background-effect"></div>
 
     <!-- Navigation Bar -->
     <nav class="sticky top-0 bg-gray-900 text-white shadow z-40">
@@ -162,7 +149,7 @@ template = """
                     <a href="#contact" class="hover:text-gray-300">Contact</a>
                 </div>
 
-                <!-- Theme and Mouse Effect Toggles -->
+                <!-- Theme Toggle Button -->
                 <div class="flex space-x-2">
                     <button
                         onclick="toggleTheme()"
@@ -171,15 +158,6 @@ template = """
                                dark:bg-gray-700 dark:text-gray-100
                                hover:bg-gray-300 dark:hover:bg-gray-600">
                         Toggle Theme
-                    </button>
-                    <button
-                        id="toggle-mouse-effect-button"
-                        onclick="toggleMouseMoveEffect()"
-                        class="px-4 py-2 rounded shadow transition-colors duration-300
-                               bg-gray-200 text-gray-800
-                               dark:bg-gray-700 dark:text-gray-100
-                               hover:bg-gray-300 dark:hover:bg-gray-600">
-                        <!-- Button text will be set by JavaScript -->
                     </button>
                 </div>
             </div>
@@ -200,7 +178,7 @@ template = """
             <h2 class="text-3xl font-bold mb-4">Work Experience</h2>
             <ul class="space-y-4">
                 {% for job in experience %}
-                <li class="p-4 rounded-lg shadow-md bg-gray-100 dark:bg-gray-800">
+                <li class="interactive-card p-4 rounded-lg shadow-md bg-gray-100 dark:bg-gray-800 relative overflow-hidden">
                     <strong class="text-xl">{{ job.role }}</strong> - <span class="text-gray-600 dark:text-gray-400">{{ job.period }}</span><br>
                     <p class="mt-2">{{ job.details }}</p>
                 </li>
@@ -231,7 +209,7 @@ template = """
             <h2 class="text-3xl font-bold mb-4">Projects</h2>
             <ul class="space-y-4">
                 {% for project in projects %}
-                <li class="p-4 rounded-lg shadow-md bg-gray-100 dark:bg-gray-800">
+                <li class="interactive-card p-4 rounded-lg shadow-md bg-gray-100 dark:bg-gray-800 relative overflow-hidden">
                     <strong class="text-xl">{{ project.title }}</strong> - <span class="text-gray-600 dark:text-gray-400">{{ project.description }}</span>
                 </li>
                 {% endfor %}
