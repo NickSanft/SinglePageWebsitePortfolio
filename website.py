@@ -146,37 +146,42 @@ template = """
 <body class="bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100 font-sans">
     <div class="background-effect" id="background-effect"></div>
 
-    <!-- Theme and Mouse Effect Toggles -->
-    <div class="fixed top-4 right-4 z-50 flex space-x-2">
-        <button
-            onclick="toggleTheme()"
-            class="px-4 py-2 rounded shadow transition-colors duration-300
-                   bg-gray-200 text-gray-800
-                   dark:bg-gray-700 dark:text-gray-100
-                   hover:bg-gray-300 dark:hover:bg-gray-600">
-            Toggle Theme
-        </button>
-        <button
-            id="toggle-mouse-effect-button"
-            onclick="toggleMouseMoveEffect()"
-            class="px-4 py-2 rounded shadow transition-colors duration-300
-                   bg-gray-200 text-gray-800
-                   dark:bg-gray-700 dark:text-gray-100
-                   hover:bg-gray-300 dark:hover:bg-gray-600">
-            <!-- Button text will be set by JavaScript -->
-        </button>
-    </div>
-
     <!-- Navigation Bar -->
     <nav class="sticky top-0 bg-gray-900 text-white shadow z-40">
         <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
             <a href="#" class="text-2xl font-bold">MyPortfolio</a>
-            <div class="space-x-6">
-                <a href="#about" class="hover:text-gray-300">About</a>
-                <a href="#experience" class="hover:text-gray-300">Experience</a>
-                <a href="#skills" class="hover:text-gray-300">Skills</a>
-                <a href="#projects" class="hover:text-gray-300">Projects</a>
-                <a href="#contact" class="hover:text-gray-300">Contact</a>
+
+            <!-- Right side container for links and buttons -->
+            <div class="flex items-center space-x-4">
+                <!-- Navigation Links (hidden on small screens) -->
+                <div class="hidden sm:flex space-x-6">
+                    <a href="#about" class="hover:text-gray-300">About</a>
+                    <a href="#experience" class="hover:text-gray-300">Experience</a>
+                    <a href="#skills" class="hover:text-gray-300">Skills</a>
+                    <a href="#projects" class="hover:text-gray-300">Projects</a>
+                    <a href="#contact" class="hover:text-gray-300">Contact</a>
+                </div>
+
+                <!-- Theme and Mouse Effect Toggles -->
+                <div class="flex space-x-2">
+                    <button
+                        onclick="toggleTheme()"
+                        class="px-4 py-2 rounded shadow transition-colors duration-300
+                               bg-gray-200 text-gray-800
+                               dark:bg-gray-700 dark:text-gray-100
+                               hover:bg-gray-300 dark:hover:bg-gray-600">
+                        Toggle Theme
+                    </button>
+                    <button
+                        id="toggle-mouse-effect-button"
+                        onclick="toggleMouseMoveEffect()"
+                        class="px-4 py-2 rounded shadow transition-colors duration-300
+                               bg-gray-200 text-gray-800
+                               dark:bg-gray-700 dark:text-gray-100
+                               hover:bg-gray-300 dark:hover:bg-gray-600">
+                        <!-- Button text will be set by JavaScript -->
+                    </button>
+                </div>
             </div>
         </div>
     </nav>
