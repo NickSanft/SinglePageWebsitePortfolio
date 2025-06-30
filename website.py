@@ -10,16 +10,17 @@ def load_data():
     # Create a dummy website_data.json if it doesn't exist for demonstration
     if not os.path.exists("website_data.json"):
         dummy_data = {
-            "website_title": "My Awesome Developer Portfolio", # Added website title
+            "website_title": "My Awesome Developer Portfolio",
+            "about_me": "Hello! I'm a software developer with a passion for building clean and efficient solutions. I specialize in web development and enjoy working with Python, JavaScript, and modern front-end frameworks. My goal is to create impactful and user-friendly applications.", # Added About Me content
             "projects": [
                 {"title": "Project Alpha", "description": "A web application built with React and Node.js."},
                 {"title": "Project Beta", "description": "Mobile app development using Flutter."},
                 {"title": "Project Gamma", "description": "Data analysis project with Python and Pandas."}
             ],
             "experience": [
-                {"role": "Software Engineer", "company": "Tech Solutions Inc.", "period": "Jan 2022 - Present", # Added company
+                {"role": "Software Engineer", "company": "Tech Solutions Inc.", "period": "Jan 2022 - Present",
                  "details": "Developed and maintained web services using Python and Django."},
-                {"role": "Junior Developer", "company": "Innovate Co.", "period": "Jul 2020 - Dec 2021", # Added company
+                {"role": "Junior Developer", "company": "Innovate Co.", "period": "Jul 2020 - Dec 2021",
                  "details": "Assisted in front-end development with HTML, CSS, and JavaScript."}
             ],
             "skills": [
@@ -169,7 +170,7 @@ template = """
     <section id="about" class="py-20">
         <div class="max-w-4xl mx-auto px-4">
             <h2 class="text-3xl font-bold mb-4">About Me</h2>
-            <p class="text-lg">Hello! I'm a software developer with a passion for building clean and efficient solutions...</p>
+            <p class="text-lg">{{ about_me }}</p> <!-- Populated from JSON -->
         </div>
     </section>
 
@@ -180,7 +181,7 @@ template = """
             <ul class="space-y-4">
                 {% for job in experience %}
                 <li class="interactive-card p-4 rounded-lg shadow-md bg-gray-100 dark:bg-gray-800 relative overflow-hidden">
-                    <strong class="text-xl">{{ job.role }}</strong> at <span class="font-semibold">{{ job.company }}</span> - <span class="text-gray-600 dark:text-gray-400">{{ job.period }}</span><br> <!-- Display company -->
+                    <strong class="text-xl">{{ job.role }}</strong> at <span class="font-semibold">{{ job.company }}</span> - <span class="text-gray-600 dark:text-gray-400">{{ job.period }}</span><br>
                     <p class="mt-2">{{ job.details }}</p>
                 </li>
                 {% endfor %}
@@ -240,7 +241,8 @@ template = """
 def index():
     data = load_data()
     return render_template_string(template,
-                                  website_title=data.get("website_title", "Developer Portfolio"), # Pass website title
+                                  website_title=data.get("website_title", "Developer Portfolio"),
+                                  about_me=data.get("about_me", "Hello! I'm a software developer..."), # Pass About Me content
                                   projects=data["projects"],
                                   experience=data["experience"],
                                   skills=data["skills"])
@@ -249,7 +251,8 @@ def index():
 def write_static_html():
     data = load_data()
     rendered = render_template_string(template,
-                                      website_title=data.get("website_title", "Developer Portfolio"), # Pass website title
+                                      website_title=data.get("website_title", "Developer Portfolio"),
+                                      about_me=data.get("about_me", "Hello! I'm a software developer..."), # Pass About Me content
                                       projects=data["projects"],
                                       experience=data["experience"],
                                       skills=data["skills"])
