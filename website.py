@@ -14,9 +14,9 @@ def load_data():
             "portfolio_name": "MyPortfolio", # Added for configurable portfolio name
             "about_me": "Hello! I'm a software developer with a passion for building clean and efficient solutions. I specialize in web development and enjoy working with Python, JavaScript, and modern front-end frameworks. My goal is to create impactful and user-friendly applications.",
             "projects": [
-                {"title": "Project Alpha", "description": "A web application built with React and Node.js.", "url": "https://github.com/yourusername/project-alpha"}, # Added URL
-                {"title": "Project Beta", "description": "Mobile app development using Flutter.", "url": "https://github.com/yourusername/project-beta"}, # Added URL
-                {"title": "Project Gamma", "description": "Data analysis project with Python and Pandas.", "url": "https://github.com/yourusername/project-gamma"} # Added URL
+                {"title": "Project Alpha", "description": "A web application built with React and Node.js.", "url": "https://github.com/yourusername/project-alpha", "icon": "fas fa-laptop-code"}, # Added URL and Icon
+                {"title": "Project Beta", "description": "Mobile app development using Flutter.", "url": "https://github.com/yourusername/project-beta", "icon": "fas fa-mobile-alt"}, # Added URL and Icon
+                {"title": "Project Gamma", "description": "Data analysis project with Python and Pandas.", "url": "https://github.com/yourusername/project-gamma", "icon": "fas fa-chart-line"} # Added URL and Icon
             ],
             "experience": [
                 {"role": "Software Engineer", "company": "Tech Solutions Inc.", "period": "Jan 2022 - Present",
@@ -29,7 +29,15 @@ def load_data():
                  "details": "Gained hands-on experience with version control and agile methodologies."}
             ],
             "skills": [
-                "Python", "JavaScript", "React", "Node.js", "Tailwind CSS", "Flask", "SQL", "Git", "Cloud Computing"
+                {"name": "Python", "icon": "fab fa-python"},
+                {"name": "JavaScript", "icon": "fab fa-js"},
+                {"name": "React", "icon": "fab fa-react"},
+                {"name": "Node.js", "icon": "fab fa-node-js"},
+                {"name": "Tailwind CSS", "icon": "fab fa-css3-alt"},
+                {"name": "Flask", "icon": "fas fa-flask"},
+                {"name": "SQL", "icon": "fas fa-database"},
+                {"name": "Git", "icon": "fab fa-git-alt"},
+                {"name": "Cloud Computing", "icon": "fas fa-cloud"}
             ],
             "contact_info": { # Added contact information
                 "github_url": "https://github.com/yourusername",
@@ -124,8 +132,28 @@ template = """
             }
         }
 
+        // Function to update scroll progress bar
+        function updateScrollProgress() {
+            const progressBar = document.getElementById('scroll-progress-bar');
+            const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = document.documentElement.scrollTop;
+            const percentage = (scrolled / scrollHeight) * 100;
+            progressBar.style.width = percentage + '%';
+        }
 
-        // Intersection Observer for fade-in/slide-up effect
+        // Function to toggle back-to-top button visibility
+        function toggleBackToTopButton() {
+            const backToTopBtn = document.getElementById('back-to-top-btn');
+            if (window.scrollY > 300) { // Show button after scrolling 300px
+                backToTopBtn.classList.remove('opacity-0', 'invisible');
+                backToTopBtn.classList.add('opacity-100', 'visible');
+            } else {
+                backToTopBtn.classList.remove('opacity-100', 'visible');
+                backToTopBtn.classList.add('opacity-0', 'invisible');
+            }
+        }
+
+        // Intersection Observer for fade-in/slide-up effect with staggering
         document.addEventListener('DOMContentLoaded', () => {
             // Apply theme based on localStorage or system preference
             if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -138,6 +166,10 @@ template = """
             applyInteractiveCardEffect();
             applyNavbarTheme(); // Apply initial navbar theme on load
 
+            // Add scroll event listeners
+            window.addEventListener('scroll', updateScrollProgress);
+            window.addEventListener('scroll', toggleBackToTopButton);
+
             const observerOptions = {
                 root: null, // viewport
                 rootMargin: '0px',
@@ -147,7 +179,17 @@ template = """
             const observer = new IntersectionObserver((entries, observer) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
-                        entry.target.classList.add('is-visible'); // Add the class to trigger animation
+                        entry.target.classList.add('is-visible'); // Add the class to trigger section animation
+
+                        // Staggered animation for children
+                        const staggerItems = entry.target.querySelectorAll('.stagger-item');
+                        staggerItems.forEach((item, index) => {
+                            // Use setTimeout to apply 'is-visible' with a delay
+                            setTimeout(() => {
+                                item.classList.add('is-visible');
+                            }, index * 100); // 100ms delay between each item
+                        });
+
                         observer.unobserve(entry.target); // Stop observing once animated
                     }
                 });
@@ -156,6 +198,11 @@ template = """
             // Observe sections for fade-in effect
             document.querySelectorAll('section.fade-in-section').forEach(section => {
                 observer.observe(section);
+            });
+
+            // Smooth scroll for back to top button
+            document.getElementById('back-to-top-btn').addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             });
         });
     </script>
@@ -175,6 +222,44 @@ template = """
         .dark body {
             --tw-gradient-stops: var(--tw-gradient-from, #1f2937) var(--tw-gradient-to, #111827); /* dark mode */
         }
+
+        /* Scroll Progress Bar */
+        #scroll-progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background-color: #3b82f6; /* Blue-500 */
+            width: 0%;
+            z-index: 50; /* Above navbar */
+            transition: width 0.1s linear; /* Smooth update */
+        }
+
+        /* Back to Top Button */
+        #back-to-top-btn {
+            position: fixed;
+            bottom: 1.5rem; /* 24px */
+            right: 1.5rem; /* 24px */
+            background-color: #3b82f6; /* Blue-500 */
+            color: white;
+            padding: 0.75rem; /* 12px */
+            border-radius: 9999px; /* Full rounded */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+            opacity: 0;
+            visibility: hidden;
+            z-index: 40; /* Below progress bar, above content */
+            cursor: pointer;
+        }
+        #back-to-top-btn:hover {
+            background-color: #2563eb; /* Blue-600 */
+        }
+        /* Focus-visible for accessibility */
+        #back-to-top-btn:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5); /* Blue-500 with transparency */
+        }
+
 
         /* Styles for the interactive card spotlight effect */
         .interactive-card::before {
@@ -216,43 +301,57 @@ template = """
             z-index: 2;
         }
 
-        /* Styles for the fade-in and slide-up effect */
+        /* Styles for the main section fade-in effect (container) */
         .fade-in-section {
             opacity: 0;
-            transform: translateY(50px);
-            /* Custom cubic-bezier for a smooth, slightly bouncy effect */
-            transition: opacity 0.7s cubic-bezier(0.5, 0, 0, 1.5),
-                        transform 0.7s cubic-bezier(0.5, 0, 0, 1.5);
+            transition: opacity 0.5s ease-out; /* Faster fade for the section container */
+        }
+        .fade-in-section.is-visible {
+            opacity: 1;
         }
 
-        .fade-in-section.is-visible {
+        /* Styles for staggered items within sections */
+        .stagger-item {
+            opacity: 0;
+            transform: translateY(20px); /* Start 20px below its final position */
+            transition: opacity 0.5s cubic-bezier(0.5, 0, 0, 1.5),
+                        transform 0.5s cubic-bezier(0.5, 0, 0, 1.5);
+        }
+        .stagger-item.is-visible {
             opacity: 1;
             transform: translateY(0);
         }
 
+
         /* Accessibility: Disable animations for users who prefer reduced motion */
         @media (prefers-reduced-motion: reduce) {
-            .fade-in-section {
+            .fade-in-section, .stagger-item {
                 transition: none !important;
                 transform: none !important;
                 opacity: 1 !important;
+            }
+            #back-to-top-btn {
+                transition: none !important;
             }
         }
     </style>
 </head>
 <body class="bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100 font-inter">
 
+    <!-- Scroll Progress Bar -->
+    <div id="scroll-progress-bar"></div>
+
     <nav class="sticky top-0 shadow z-40 transition-colors duration-300">
         <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <a href="#" class="text-2xl font-bold">{{ portfolio_name }}</a>
+            <a href="#" class="text-2xl font-bold text-gray-100 dark:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded">{{ portfolio_name }}</a>
 
             <div class="flex items-center space-x-4">
                 <div class="hidden sm:flex space-x-6">
-                    <a href="#about" class="hover:text-gray-300">About</a>
-                    <a href="#experience" class="hover:text-gray-300">Experience</a>
-                    <a href="#skills" class="hover:text-gray-300">Skills</a>
-                    <a href="#projects" class="hover:text-gray-300">Projects</a>
-                    <a href="#contact" class="hover:text-gray-300">Contact</a>
+                    <a href="#about" class="hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded">About</a>
+                    <a href="#experience" class="hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded">Experience</a>
+                    <a href="#skills" class="hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded">Skills</a>
+                    <a href="#projects" class="hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded">Projects</a>
+                    <a href="#contact" class="hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded">Contact</a>
                 </div>
 
                 <div class="flex space-x-2">
@@ -261,7 +360,8 @@ template = """
                         class="px-4 py-2 rounded shadow transition-colors duration-300
                                bg-gray-200 text-gray-800
                                dark:bg-gray-700 dark:text-gray-100
-                               hover:bg-gray-300 dark:hover:bg-gray-600">
+                               hover:bg-gray-300 dark:hover:bg-gray-600
+                               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
                         Toggle Theme
                     </button>
                 </div>
@@ -281,11 +381,11 @@ template = """
             <h2 class="text-3xl font-bold mb-4">Work Experience</h2>
             <ul class="space-y-6"> {# Increased space for grouped items #}
                 {% for company_group in grouped_experience %}
-                <li class="interactive-card p-6 rounded-lg shadow-md bg-gray-100 dark:bg-gray-800 relative overflow-hidden">
+                <li class="interactive-card p-6 rounded-lg shadow-md bg-gray-100 dark:bg-gray-800 relative overflow-hidden stagger-item">
                     <h3 class="text-2xl font-bold mb-3">{{ company_group.company }}</h3>
                     <ul class="space-y-3 pl-4 border-l-2 border-gray-300 dark:border-gray-600">
                         {% for job in company_group.roles %}
-                        <li>
+                        <li class="stagger-item">
                             <strong class="text-xl">{{ job.role }}</strong> - <span class="text-gray-600 dark:text-gray-400">{{ job.period }}</span><br>
                             <p class="mt-1 text-sm">{{ job.details }}</p>
                         </li>
@@ -302,10 +402,11 @@ template = """
             <h2 class="text-3xl font-bold mb-4">Skills</h2>
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
                 {% for skill in skills %}
-                <div class="p-4 rounded shadow text-center
+                <div class="stagger-item p-4 rounded shadow text-center
                             bg-gray-200 dark:bg-gray-700
                             text-gray-800 dark:text-gray-100">
-                    {{ skill }}
+                    {% if skill.icon %}<i class="{{ skill.icon }} mr-2"></i>{% endif %}
+                    {{ skill.name }}
                 </div>
                 {% endfor %}
             </div>
@@ -317,11 +418,15 @@ template = """
             <h2 class="text-3xl font-bold mb-4">Projects</h2>
             <ul class="space-y-4">
                 {% for project in projects %}
-                <li class="interactive-card p-4 rounded-lg shadow-md bg-gray-100 dark:bg-gray-800 relative overflow-hidden">
+                <li class="interactive-card p-4 rounded-lg shadow-md bg-gray-100 dark:bg-gray-800 relative overflow-hidden stagger-item">
                     <strong class="text-xl">
                         {% if project.url %}
-                            <a href="{{ project.url }}" target="_blank" rel="noopener noreferrer" class="hover:underline">{{ project.title }}</a>
+                            <a href="{{ project.url }}" target="_blank" rel="noopener noreferrer" class="hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded">
+                                {% if project.icon %}<i class="{{ project.icon }} mr-2"></i>{% endif %}
+                                {{ project.title }}
+                            </a>
                         {% else %}
+                            {% if project.icon %}<i class="{{ project.icon }} mr-2"></i>{% endif %}
                             {{ project.title }}
                         {% endif %}
                     </strong> - <span class="text-gray-600 dark:text-gray-400">{{ project.description }}</span>
@@ -336,14 +441,19 @@ template = """
             <h2 class="text-3xl font-bold mb-4">Contact</h2>
             <p class="mb-6">Feel free to connect with me on social media!</p>
             <div class="space-x-6">
-                <a href="{{ contact_info.github_url }}" class="text-gray-700 dark:text-white hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-300"><i class="fab fa-github fa-2x"></i></a>
-                <a href="{{ contact_info.linkedin_url }}" class="text-gray-700 dark:text-white hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-300"><i class="fab fa-linkedin fa-2x"></i></a>
-                <a href="{{ contact_info.bandcamp_url }}" class="text-gray-700 dark:text-white hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-300"><i class="fab fa-bandcamp fa-2x"></i></a>
-                <a href="{{ contact_info.kofi_url }}" class="text-gray-700 dark:text-white hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-300"><i class="fa fa-coffee fa-2x"></i></a>
+                <a href="{{ contact_info.github_url }}" class="text-gray-700 dark:text-white hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded"><i class="fab fa-github fa-2x"></i></a>
+                <a href="{{ contact_info.linkedin_url }}" class="text-gray-700 dark:text-white hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded"><i class="fab fa-linkedin fa-2x"></i></a>
+                <a href="{{ contact_info.bandcamp_url }}" class="text-gray-700 dark:text-white hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded"><i class="fab fa-bandcamp fa-2x"></i></a>
+                <a href="{{ contact_info.kofi_url }}" class="text-gray-700 dark:text-white hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded"><i class="fa fa-coffee fa-2x"></i></a>
             </div>
             <p class="mt-6 text-sm text-gray-500 dark:text-gray-400">&copy; 2025 {{ copyright_name }}</p>
         </div>
     </section>
+
+    <!-- Back to Top Button -->
+    <button id="back-to-top-btn" title="Go to top">
+        <i class="fas fa-arrow-up"></i>
+    </button>
 
 </body>
 </html>
