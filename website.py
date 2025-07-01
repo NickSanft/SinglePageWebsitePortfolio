@@ -11,6 +11,7 @@ def load_data():
     if not os.path.exists("website_data.json"):
         dummy_data = {
             "website_title": "My Awesome Developer Portfolio",
+            "portfolio_name": "MyPortfolio", # Added for configurable portfolio name
             "about_me": "Hello! I'm a software developer with a passion for building clean and efficient solutions. I specialize in web development and enjoy working with Python, JavaScript, and modern front-end frameworks. My goal is to create impactful and user-friendly applications.",
             "projects": [
                 {"title": "Project Alpha", "description": "A web application built with React and Node.js.", "url": "https://github.com/yourusername/project-alpha"}, # Added URL
@@ -94,6 +95,7 @@ template = """
                 document.documentElement.classList.add('dark');
                 localStorage.theme = 'dark';
             }
+            applyNavbarTheme(); // Apply theme to navbar immediately
         }
 
         // Function to apply the interactive spotlight effect to cards
@@ -110,6 +112,19 @@ template = """
             });
         }
 
+        // Function to apply the correct navbar theme classes
+        function applyNavbarTheme() {
+            const navbar = document.querySelector('nav');
+            if (document.documentElement.classList.contains('dark')) {
+                navbar.classList.remove('bg-white', 'text-gray-900');
+                navbar.classList.add('bg-gray-900', 'text-gray-100');
+            } else {
+                navbar.classList.remove('bg-gray-900', 'text-gray-100');
+                navbar.classList.add('bg-white', 'text-gray-900');
+            }
+        }
+
+
         // Intersection Observer for fade-in/slide-up effect
         document.addEventListener('DOMContentLoaded', () => {
             // Apply theme based on localStorage or system preference
@@ -121,6 +136,7 @@ template = """
 
             // Initialize the interactive card effect
             applyInteractiveCardEffect();
+            applyNavbarTheme(); // Apply initial navbar theme on load
 
             const observerOptions = {
                 root: null, // viewport
@@ -226,9 +242,9 @@ template = """
 </head>
 <body class="bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100 font-inter">
 
-    <nav class="sticky top-0 bg-gray-900 text-white shadow z-40">
+    <nav class="sticky top-0 shadow z-40 transition-colors duration-300">
         <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <a href="#" class="text-2xl font-bold">MyPortfolio</a>
+            <a href="#" class="text-2xl font-bold">{{ portfolio_name }}</a>
 
             <div class="flex items-center space-x-4">
                 <div class="hidden sm:flex space-x-6">
@@ -339,6 +355,7 @@ def index():
     data = load_data()
     return render_template_string(template,
                                   website_title=data.get("website_title", "Developer Portfolio"),
+                                  portfolio_name=data.get("portfolio_name", "MyPortfolio"), # Pass portfolio name
                                   about_me=data.get("about_me", "Hello! I'm a software developer..."),
                                   projects=data["projects"],
                                   # Pass the grouped experience data
@@ -352,6 +369,7 @@ def write_static_html():
     data = load_data()
     rendered = render_template_string(template,
                                       website_title=data.get("website_title", "Developer Portfolio"),
+                                      portfolio_name=data.get("portfolio_name", "MyPortfolio"), # Pass portfolio name
                                       about_me=data.get("about_me", "Hello! I'm a software developer..."),
                                       projects=data["projects"],
                                       # Pass the grouped experience data
