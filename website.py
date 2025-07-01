@@ -20,8 +20,12 @@ def load_data():
             "experience": [
                 {"role": "Software Engineer", "company": "Tech Solutions Inc.", "period": "Jan 2022 - Present",
                  "details": "Developed and maintained web services using Python and Django."},
+                {"role": "Senior Software Engineer", "company": "Tech Solutions Inc.", "period": "Jan 2024 - Present",
+                 "details": "Led a team in developing scalable microservices and mentored junior developers."},
                 {"role": "Junior Developer", "company": "Innovate Co.", "period": "Jul 2020 - Dec 2021",
-                 "details": "Assisted in front-end development with HTML, CSS, and JavaScript."}
+                 "details": "Assisted in front-end development with HTML, CSS, and JavaScript."},
+                {"role": "Intern", "company": "Innovate Co.", "period": "May 2020 - Jun 2020",
+                 "details": "Gained hands-on experience with version control and agile methodologies."}
             ],
             "skills": [
                 "Python", "JavaScript", "React", "Node.js", "Tailwind CSS", "Flask", "SQL", "Git", "Cloud Computing"
@@ -31,13 +35,33 @@ def load_data():
                 "linkedin_url": "https://linkedin.com/in/yourusername",
                 "bandcamp_url": "https://yourusername.bandcamp.com",
                 "kofi_url": "https://ko-fi.com/yourusername"
-            }
+            },
+            "copyright_name": "Your Name" # Added copyright name
         }
         with open("website_data.json", "w", encoding="utf-8") as f:
             json.dump(dummy_data, f, indent=4)
 
     with open("website_data.json", "r", encoding="utf-8") as f:
-        return json.load(f)
+        data = json.load(f)
+
+    # Group experience by company
+    grouped_experience = []
+    if "experience" in data:
+        current_company = None
+        for job in data["experience"]:
+            if job["company"] != current_company:
+                grouped_experience.append({
+                    "company": job["company"],
+                    "roles": []
+                })
+                current_company = job["company"]
+            grouped_experience[-1]["roles"].append({
+                "role": job["role"],
+                "period": job["period"],
+                "details": job["details"]
+            })
+    data["grouped_experience"] = grouped_experience
+    return data
 
 
 # Tailwind CSS with Dark Mode and theme toggle logic + interactive card spotlight effect
@@ -47,8 +71,7 @@ template = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ website_title }}</title> <!-- Dynamic website title -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>{{ website_title }}</title> <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             darkMode: 'class'
@@ -79,7 +102,7 @@ template = """
             });
         }
 
-        // On page load, apply theme and initialize effects
+        // Intersection Observer for slide-in/fade-in effect
         document.addEventListener('DOMContentLoaded', () => {
             // Apply theme based on localStorage or system preference
             if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -90,6 +113,28 @@ template = """
 
             // Initialize the interactive card effect
             applyInteractiveCardEffect();
+
+            const observerOptions = {
+                root: null, // viewport
+                rootMargin: '0px',
+                threshold: 0.1 // 10% of the target element is visible
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.remove('opacity-0', 'translate-y-10');
+                        entry.target.classList.add('opacity-100', 'translate-y-0');
+                        observer.unobserve(entry.target); // Stop observing once animated
+                    }
+                });
+            }, observerOptions);
+
+            // Observe sections
+            document.querySelectorAll('section').forEach(section => {
+                section.classList.add('opacity-0', 'translate-y-10', 'transition-all', 'duration-700', 'ease-out');
+                observer.observe(section);
+            });
         });
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -141,14 +186,11 @@ template = """
 </head>
 <body class="bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100 font-sans">
 
-    <!-- Navigation Bar -->
     <nav class="sticky top-0 bg-gray-900 text-white shadow z-40">
         <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
             <a href="#" class="text-2xl font-bold">MyPortfolio</a>
 
-            <!-- Right side container for links and buttons -->
             <div class="flex items-center space-x-4">
-                <!-- Navigation Links (hidden on small screens) -->
                 <div class="hidden sm:flex space-x-6">
                     <a href="#about" class="hover:text-gray-300">About</a>
                     <a href="#experience" class="hover:text-gray-300">Experience</a>
@@ -157,7 +199,6 @@ template = """
                     <a href="#contact" class="hover:text-gray-300">Contact</a>
                 </div>
 
-                <!-- Theme Toggle Button -->
                 <div class="flex space-x-2">
                     <button
                         onclick="toggleTheme()"
@@ -172,30 +213,33 @@ template = """
         </div>
     </nav>
 
-    <!-- About Section -->
     <section id="about" class="py-20">
         <div class="max-w-4xl mx-auto px-4">
             <h2 class="text-3xl font-bold mb-4">About Me</h2>
-            <p class="text-lg">{{ about_me }}</p> <!-- Populated from JSON -->
-        </div>
+            <p class="text-lg">{{ about_me }}</p> </div>
     </section>
 
-    <!-- Experience Section -->
     <section id="experience" class="py-20">
         <div class="max-w-4xl mx-auto px-4">
             <h2 class="text-3xl font-bold mb-4">Work Experience</h2>
-            <ul class="space-y-4">
-                {% for job in experience %}
-                <li class="interactive-card p-4 rounded-lg shadow-md bg-gray-100 dark:bg-gray-800 relative overflow-hidden">
-                    <strong class="text-xl">{{ job.role }}</strong> at <span class="font-semibold">{{ job.company }}</span> - <span class="text-gray-600 dark:text-gray-400">{{ job.period }}</span><br>
-                    <p class="mt-2">{{ job.details }}</p>
+            <ul class="space-y-6"> {# Increased space for grouped items #}
+                {% for company_group in grouped_experience %}
+                <li class="interactive-card p-6 rounded-lg shadow-md bg-gray-100 dark:bg-gray-800 relative overflow-hidden">
+                    <h3 class="text-2xl font-bold mb-3">{{ company_group.company }}</h3>
+                    <ul class="space-y-3 pl-4 border-l-2 border-gray-300 dark:border-gray-600">
+                        {% for job in company_group.roles %}
+                        <li>
+                            <strong class="text-xl">{{ job.role }}</strong> - <span class="text-gray-600 dark:text-gray-400">{{ job.period }}</span><br>
+                            <p class="mt-1 text-sm">{{ job.details }}</p>
+                        </li>
+                        {% endfor %}
+                    </ul>
                 </li>
                 {% endfor %}
             </ul>
         </div>
     </section>
 
-    <!-- Skills Section -->
     <section id="skills" class="py-20">
         <div class="max-w-4xl mx-auto px-4">
             <h2 class="text-3xl font-bold mb-4">Skills</h2>
@@ -211,7 +255,6 @@ template = """
         </div>
     </section>
 
-    <!-- Projects Section -->
     <section id="projects" class="py-20">
         <div class="max-w-4xl mx-auto px-4">
             <h2 class="text-3xl font-bold mb-4">Projects</h2>
@@ -231,7 +274,6 @@ template = """
         </div>
     </section>
 
-    <!-- Contact Section -->
     <section id="contact" class="py-20">
         <div class="max-w-4xl mx-auto px-4 text-center">
             <h2 class="text-3xl font-bold mb-4">Contact</h2>
@@ -242,7 +284,7 @@ template = """
                 <a href="{{ contact_info.bandcamp_url }}" class="text-gray-700 dark:text-white hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-300"><i class="fab fa-bandcamp fa-2x"></i></a>
                 <a href="{{ contact_info.kofi_url }}" class="text-gray-700 dark:text-white hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-300"><i class="fa fa-coffee fa-2x"></i></a>
             </div>
-            <p class="mt-6 text-sm text-gray-500 dark:text-gray-400">&copy; 2025 Your Name</p>
+            <p class="mt-6 text-sm text-gray-500 dark:text-gray-400">&copy; 2025 {{ copyright_name }}</p>
         </div>
     </section>
 
@@ -258,9 +300,11 @@ def index():
                                   website_title=data.get("website_title", "Developer Portfolio"),
                                   about_me=data.get("about_me", "Hello! I'm a software developer..."),
                                   projects=data["projects"],
-                                  experience=data["experience"],
+                                  # Pass the grouped experience data
+                                  grouped_experience=data["grouped_experience"],
                                   skills=data["skills"],
-                                  contact_info=data.get("contact_info", {"github_url": "#", "linkedin_url": "#", "bandcamp_url": "#", "kofi_url": "#"}))
+                                  contact_info=data.get("contact_info", {"github_url": "#", "linkedin_url": "#", "bandcamp_url": "#", "kofi_url": "#"}),
+                                  copyright_name=data.get("copyright_name", "Your Name"))
 
 
 def write_static_html():
@@ -269,9 +313,11 @@ def write_static_html():
                                       website_title=data.get("website_title", "Developer Portfolio"),
                                       about_me=data.get("about_me", "Hello! I'm a software developer..."),
                                       projects=data["projects"],
-                                      experience=data["experience"],
+                                      # Pass the grouped experience data
+                                      grouped_experience=data["grouped_experience"],
                                       skills=data["skills"],
-                                      contact_info=data.get("contact_info", {"github_url": "#", "linkedin_url": "#", "bandcamp_url": "#", "kofi_url": "#"}))
+                                      contact_info=data.get("contact_info", {"github_url": "#", "linkedin_url": "#", "bandcamp_url": "#", "kofi_url": "#"}),
+                                      copyright_name=data.get("copyright_name", "Your Name"))
     os.makedirs("output", exist_ok=True)
     with open("output/index.html", "w", encoding="utf-8") as f:
         f.write(rendered)
