@@ -71,10 +71,18 @@ template = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ website_title }}</title> <script src="https://cdn.tailwindcss.com"></script>
+    <title>{{ website_title }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
-            darkMode: 'class'
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                },
+            },
         }
 
         // Function to toggle theme and save preference to localStorage
@@ -102,7 +110,7 @@ template = """
             });
         }
 
-        // Intersection Observer for slide-in/fade-in effect
+        // Intersection Observer for fade-in/slide-up effect
         document.addEventListener('DOMContentLoaded', () => {
             // Apply theme based on localStorage or system preference
             if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -123,24 +131,33 @@ template = """
             const observer = new IntersectionObserver((entries, observer) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
-                        entry.target.classList.remove('opacity-0', 'translate-y-10');
-                        entry.target.classList.add('opacity-100', 'translate-y-0');
+                        entry.target.classList.add('is-visible'); // Add the class to trigger animation
                         observer.unobserve(entry.target); // Stop observing once animated
                     }
                 });
             }, observerOptions);
 
-            // Observe sections
-            document.querySelectorAll('section').forEach(section => {
-                section.classList.add('opacity-0', 'translate-y-10', 'transition-all', 'duration-700', 'ease-out');
+            // Observe sections for fade-in effect
+            document.querySelectorAll('section.fade-in-section').forEach(section => {
                 observer.observe(section);
             });
         });
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         html {
             scroll-behavior: smooth;
+        }
+
+        body {
+            /* Subtle gradient background */
+            background: linear-gradient(to bottom right, var(--tw-gradient-stops));
+            --tw-gradient-stops: var(--tw-gradient-from, #f8fafc) var(--tw-gradient-to, #e2e8f0); /* light mode */
+        }
+
+        .dark body {
+            --tw-gradient-stops: var(--tw-gradient-from, #1f2937) var(--tw-gradient-to, #111827); /* dark mode */
         }
 
         /* Styles for the interactive card spotlight effect */
@@ -182,9 +199,32 @@ template = """
             position: relative;
             z-index: 2;
         }
+
+        /* Styles for the fade-in and slide-up effect */
+        .fade-in-section {
+            opacity: 0;
+            transform: translateY(50px);
+            /* Custom cubic-bezier for a smooth, slightly bouncy effect */
+            transition: opacity 0.7s cubic-bezier(0.5, 0, 0, 1.5),
+                        transform 0.7s cubic-bezier(0.5, 0, 0, 1.5);
+        }
+
+        .fade-in-section.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Accessibility: Disable animations for users who prefer reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            .fade-in-section {
+                transition: none !important;
+                transform: none !important;
+                opacity: 1 !important;
+            }
+        }
     </style>
 </head>
-<body class="bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100 font-sans">
+<body class="bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100 font-inter">
 
     <nav class="sticky top-0 bg-gray-900 text-white shadow z-40">
         <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
@@ -213,13 +253,14 @@ template = """
         </div>
     </nav>
 
-    <section id="about" class="py-20">
+    <section id="about" class="py-20 fade-in-section">
         <div class="max-w-4xl mx-auto px-4">
             <h2 class="text-3xl font-bold mb-4">About Me</h2>
-            <p class="text-lg">{{ about_me }}</p> </div>
+            <p class="text-lg">{{ about_me }}</p>
+        </div>
     </section>
 
-    <section id="experience" class="py-20">
+    <section id="experience" class="py-20 fade-in-section">
         <div class="max-w-4xl mx-auto px-4">
             <h2 class="text-3xl font-bold mb-4">Work Experience</h2>
             <ul class="space-y-6"> {# Increased space for grouped items #}
@@ -240,7 +281,7 @@ template = """
         </div>
     </section>
 
-    <section id="skills" class="py-20">
+    <section id="skills" class="py-20 fade-in-section">
         <div class="max-w-4xl mx-auto px-4">
             <h2 class="text-3xl font-bold mb-4">Skills</h2>
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
@@ -255,7 +296,7 @@ template = """
         </div>
     </section>
 
-    <section id="projects" class="py-20">
+    <section id="projects" class="py-20 fade-in-section">
         <div class="max-w-4xl mx-auto px-4">
             <h2 class="text-3xl font-bold mb-4">Projects</h2>
             <ul class="space-y-4">
@@ -274,7 +315,7 @@ template = """
         </div>
     </section>
 
-    <section id="contact" class="py-20">
+    <section id="contact" class="py-20 fade-in-section">
         <div class="max-w-4xl mx-auto px-4 text-center">
             <h2 class="text-3xl font-bold mb-4">Contact</h2>
             <p class="mb-6">Feel free to connect with me on social media!</p>
