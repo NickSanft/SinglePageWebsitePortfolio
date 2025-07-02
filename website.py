@@ -2,7 +2,7 @@ from flask import Flask, render_template_string
 import os
 import json
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='', static_folder='input')
 
 
 # Load and process data from external JSON file
