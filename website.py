@@ -211,7 +211,9 @@ template = """
                 });
             }, observerOptions);
 
-            document.querySelectorAll('section.fade-in-section').forEach(section => { observer.observe(section); });
+            // --- FIX: Changed selector from 'section.fade-in-section' to '.fade-in-section' to include the footer ---
+            document.querySelectorAll('.fade-in-section').forEach(element => { observer.observe(element); });
+
             document.getElementById('back-to-top-btn').addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); });
         });
     </script>
