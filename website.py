@@ -269,6 +269,17 @@ template = """
         .stagger-item { opacity: 0; transform: translateY(20px); transition: opacity 0.5s cubic-bezier(0.5, 0, 0, 1.5), transform 0.5s cubic-bezier(0.5, 0, 0, 1.5); }
         .stagger-item.is-visible { opacity: 1; transform: translateY(0); }
         @media (prefers-reduced-motion: reduce) { .fade-in-section, .stagger-item, #back-to-top-btn { transition: none !important; transform: none !important; opacity: 1 !important; } }
+        
+        #fontFamilySelect {
+          color: black;
+          background-color: white;
+        }
+        
+        /* Dark mode styles */
+        .dark #fontFamilySelect {
+          color: white; /* light text */
+          background-color: #2d2d2d; /* dark background for contrast */
+        }
     </style>
 </head>
 <body class="bg-[var(--color-background)] text-[var(--color-text-primary)]">
@@ -402,135 +413,252 @@ template = """
                 </div>
             </div>
         </section>
-        <section id="play" class="py-20 fade-in-section">
-          <div class="max-w-4xl mx-auto text-center">
-            <h2 class="text-4xl font-bold mb-8">Play with this website!</h2>
-            <p class="mb-4 text-[var(--color-text-secondary)]">Choose your own theme colors below and see the changes in real-time. Your changes will apply separately for light and dark mode and be saved locally.</p>
-        
-            <div class="mb-8">
-              <button onclick="setMode('light')" class="px-4 py-2 rounded bg-gray-300 text-black dark:bg-gray-600 dark:text-white hover:bg-gray-400 dark:hover:bg-gray-500 mr-2">Edit Light Theme</button>
-              <button onclick="setMode('dark')" class="px-4 py-2 rounded bg-gray-800 text-white hover:bg-gray-700 mr-2">Edit Dark Theme</button>
-              <button onclick="resetThemeColors()" class="px-4 py-2 rounded bg-red-500 text-white hover:bg-red-600">Reset to Default</button>
-            </div>
-        
-            <div class="grid sm:grid-cols-2 gap-6 text-left">
-              <div>
-                <label class="block mb-2 font-semibold" for="backgroundColorPicker">Background Color</label>
-                <input type="color" id="backgroundColorPicker" class="w-full h-10 cursor-pointer">
-              </div>
-              <div>
-                <label class="block mb-2 font-semibold" for="textPrimaryColorPicker">Primary Text Color</label>
-                <input type="color" id="textPrimaryColorPicker" class="w-full h-10 cursor-pointer">
-              </div>
-              <div>
-                <label class="block mb-2 font-semibold" for="textSecondaryColorPicker">Secondary Text Color</label>
-                <input type="color" id="textSecondaryColorPicker" class="w-full h-10 cursor-pointer">
-              </div>
-              <div>
-                <label class="block mb-2 font-semibold" for="cardBackgroundColorPicker">Card Background Color</label>
-                <input type="color" id="cardBackgroundColorPicker" class="w-full h-10 cursor-pointer">
-              </div>
-              <div>
-                <label class="block mb-2 font-semibold" for="accentColorPicker">Accent Color</label>
-                <input type="color" id="accentColorPicker" class="w-full h-10 cursor-pointer">
-              </div>
-              <div>
-                <label class="block mb-2 font-semibold" for="accentHoverColorPicker">Accent Hover Color</label>
-                <input type="color" id="accentHoverColorPicker" class="w-full h-10 cursor-pointer">
-              </div>
-            </div>
-          </div>
-        
-          <script>
-            let activeMode = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
-        
-            const defaultColors = {
-              light: {
-                '--color-background': '{{ theme_colors.light.background }}',
-                '--color-text-primary': '{{ theme_colors.light.text_primary }}',
-                '--color-text-secondary': '{{ theme_colors.light.text_secondary }}',
-                '--color-card-background': '{{ theme_colors.light.card_background }}',
-                '--color-accent': '{{ theme_colors.light.accent }}',
-                '--color-accent-hover': '{{ theme_colors.light.accent_hover }}'
-              },
-              dark: {
-                '--color-background': '{{ theme_colors.dark.background }}',
-                '--color-text-primary': '{{ theme_colors.dark.text_primary }}',
-                '--color-text-secondary': '{{ theme_colors.dark.text_secondary }}',
-                '--color-card-background': '{{ theme_colors.dark.card_background }}',
-                '--color-accent': '{{ theme_colors.dark.accent }}',
-                '--color-accent-hover': '{{ theme_colors.dark.accent_hover }}'
-              }
-            };
-        
-            function setMode(mode) {
-              activeMode = mode;
-              updatePickers();
-            }
-        
-            function setCSSVariable(varName, value) {
-              document.documentElement.style.setProperty(varName, value);
-              saveThemeColor(varName, value);
-            }
-        
-            function saveThemeColor(varName, value) {
-              const saved = JSON.parse(localStorage.getItem('customColors') || '{}');
-              if (!saved[activeMode]) saved[activeMode] = {};
-              saved[activeMode][varName] = value;
-              localStorage.setItem('customColors', JSON.stringify(saved));
-            }
-        
-            function applySavedThemeColors() {
-              const saved = JSON.parse(localStorage.getItem('customColors') || '{}');
-              ['light', 'dark'].forEach(mode => {
-                const vars = saved[mode] || {};
-                for (const key in vars) {
-                  if (mode === 'dark') document.documentElement.classList.add('dark');
-                  document.documentElement.style.setProperty(key, vars[key]);
-                }
-              });
-            }
-        
-            function updatePickers() {
-              colorInputs.forEach(({ id, cssVar }) => {
-                const input = document.getElementById(id);
-                const computedStyles = getComputedStyle(document.documentElement);
-                input.value = computedStyles.getPropertyValue(cssVar).trim();
-              });
-            }
-        
-            function resetThemeColors() {
-              localStorage.removeItem('customColors');
-              for (const mode of ['light', 'dark']) {
-                for (const key in defaultColors[mode]) {
-                  if (mode === 'dark') document.documentElement.classList.add('dark');
-                  document.documentElement.style.setProperty(key, defaultColors[mode][key]);
-                }
-              }
-              updatePickers();
-            }
-        
-            const colorInputs = [
-              { id: 'backgroundColorPicker', cssVar: '--color-background' },
-              { id: 'textPrimaryColorPicker', cssVar: '--color-text-primary' },
-              { id: 'textSecondaryColorPicker', cssVar: '--color-text-secondary' },
-              { id: 'cardBackgroundColorPicker', cssVar: '--color-card-background' },
-              { id: 'accentColorPicker', cssVar: '--color-accent' },
-              { id: 'accentHoverColorPicker', cssVar: '--color-accent-hover' }
-            ];
-        
-            colorInputs.forEach(({ id, cssVar }) => {
-              const input = document.getElementById(id);
-              input.addEventListener('input', (e) => {
-                setCSSVariable(cssVar, e.target.value);
-              });
-            });
-        
-            applySavedThemeColors();
-            updatePickers();
-          </script>
+<!-- === Enhanced Play Controls Combined with Theme Editor === -->
+<section id="play" class="py-20 fade-in-section">
+  <div class="max-w-4xl mx-auto text-center">
+    <h2 class="text-4xl font-bold mb-8">Play with this website!</h2>
+    <p class="mb-4 text-[var(--color-text-secondary)]">Choose your own theme colors below and see the changes in real-time. Your changes will apply separately for light and dark mode and be saved locally.</p>
+
+    <div class="mb-8">
+      <button onclick="setMode('light')" class="px-4 py-2 rounded bg-gray-300 text-black dark:bg-gray-600 dark:text-white hover:bg-gray-400 dark:hover:bg-gray-500 mr-2">Edit Light Theme</button>
+      <button onclick="setMode('dark')" class="px-4 py-2 rounded bg-gray-800 text-white hover:bg-gray-700 mr-2">Edit Dark Theme</button>
+      <button onclick="resetAllCustomizations()" class="px-4 py-2 rounded bg-red-500 text-white hover:bg-red-600">Reset to Default</button>
+    </div>
+
+    <div class="grid sm:grid-cols-2 gap-6 text-left">
+      <div>
+        <label class="block mb-2 font-semibold" for="backgroundColorPicker">Background Color</label>
+        <input type="color" id="backgroundColorPicker" class="w-full h-10 cursor-pointer" onchange="updateColor('--color-background', this.value)">
+      </div>
+      <div>
+        <label class="block mb-2 font-semibold" for="textPrimaryColorPicker">Primary Text Color</label>
+        <input type="color" id="textPrimaryColorPicker" class="w-full h-10 cursor-pointer" onchange="updateColor('--color-text-primary', this.value)">
+      </div>
+      <div>
+        <label class="block mb-2 font-semibold" for="textSecondaryColorPicker">Secondary Text Color</label>
+        <input type="color" id="textSecondaryColorPicker" class="w-full h-10 cursor-pointer" onchange="updateColor('--color-text-secondary', this.value)">
+      </div>
+      <div>
+        <label class="block mb-2 font-semibold" for="cardBackgroundColorPicker">Card Background Color</label>
+        <input type="color" id="cardBackgroundColorPicker" class="w-full h-10 cursor-pointer" onchange="updateColor('--color-card-background', this.value)">
+      </div>
+      <div>
+        <label class="block mb-2 font-semibold" for="accentColorPicker">Accent Color</label>
+        <input type="color" id="accentColorPicker" class="w-full h-10 cursor-pointer" onchange="updateColor('--color-accent', this.value)">
+      </div>
+      <div>
+        <label class="block mb-2 font-semibold" for="accentHoverColorPicker">Accent Hover Color</label>
+        <input type="color" id="accentHoverColorPicker" class="w-full h-10 cursor-pointer" onchange="updateColor('--color-accent-hover', this.value)">
+      </div>
+    </div>
+
+    <!-- Enhanced Play Controls -->
+    <div class="grid sm:grid-cols-2 gap-6 text-left mt-12">
+      <div>
+        <label class="block mb-2 font-semibold" for="fontSizeSlider">Font Size Scale</label>
+        <input type="range" id="fontSizeSlider" min="0.8" max="1.5" step="0.05" value="1" onchange="saveFontSize(this.value)" class="w-full">
+      </div>
+      <div>
+        <label class="block mb-2 font-semibold" for="fontFamilySelect">Font Family</label>
+        <select id="fontFamilySelect" class="w-full h-10" onchange="saveFontFamily(this.value)">
+          <option value="'Inter', sans-serif">Inter</option>
+          <option value="'Segoe UI', sans-serif">Segoe UI</option>
+          <option value="'Courier New', monospace">Courier New</option>
+          <option value="'Times New Roman', serif">Times New Roman</option>
+        </select>
+      </div>
+      <div class="flex items-center space-x-2">
+        <input type="checkbox" id="grayscaleToggle" onchange="toggleGrayscale(this.checked)">
+        <label for="grayscaleToggle" class="font-semibold">Enable Grayscale</label>
+      </div>
+    </div>
+  </div>
 </section>
-        
+
+<style>
+:root {
+  --font-size-scale: 1;
+  --font-family-custom: 'Inter', sans-serif;
+  --grayscale: none;
+}
+html, body {
+  font-size: calc(16px * var(--font-size-scale));
+  font-family: var(--font-family-custom);
+  filter: var(--grayscale);
+}
+</style>
+
+<script>
+function saveFontSize(size) {
+  document.documentElement.style.setProperty('--font-size-scale', size);
+  localStorage.setItem('fontSize', size);
+}
+
+function applySavedFontSize() {
+  const size = localStorage.getItem('fontSize');
+  if (size) {
+    document.documentElement.style.setProperty('--font-size-scale', size);
+  }
+}
+
+function saveFontFamily(family) {
+  document.documentElement.style.setProperty('--font-family-custom', family);
+  localStorage.setItem('fontFamily', family);
+}
+
+function applySavedFontFamily() {
+  const family = localStorage.getItem('fontFamily');
+  if (family) {
+    document.documentElement.style.setProperty('--font-family-custom', family);
+  }
+}
+
+function toggleGrayscale(enable) {
+  document.documentElement.style.setProperty('--grayscale', enable ? 'grayscale(100%)' : 'none');
+  localStorage.setItem('grayscale', enable);
+}
+
+function applySavedGrayscale() {
+  const gs = localStorage.getItem('grayscale');
+  document.documentElement.style.setProperty('--grayscale', gs === 'true' ? 'grayscale(100%)' : 'none');
+}
+
+function resetAllCustomizations() {
+  // Clear all stored customization keys
+  localStorage.removeItem('customColors');
+  localStorage.removeItem('fontSize');
+  localStorage.removeItem('fontFamily');
+  localStorage.removeItem('grayscale');
+  localStorage.removeItem('theme');
+
+  // Reset CSS variables for colors
+  const defaultColors = {
+    '--color-background': '',
+    '--color-text-primary': '',
+    '--color-text-secondary': '',
+    '--color-card-background': '',
+    '--color-accent': '',
+    '--color-accent-hover': ''
+  };
+  for (const key in defaultColors) {
+    document.documentElement.style.removeProperty(key);
+  }
+
+  // Reset font size, family, and grayscale to defaults
+  document.documentElement.style.setProperty('--font-size-scale', '1');
+  document.documentElement.style.setProperty('--font-family-custom', "'Inter', sans-serif");
+  document.documentElement.style.setProperty('--grayscale', 'none');
+
+  // Reset dark mode class and theme localStorage
+  document.documentElement.classList.remove('dark');
+
+  // Reset inputs to default values
+  document.getElementById('fontSizeSlider').value = 1;
+  document.getElementById('fontFamilySelect').value = "'Inter', sans-serif";
+  document.getElementById('grayscaleToggle').checked = false;
+
+  // Reset color pickers to reflect default CSS values or fallback
+  [
+    'backgroundColorPicker',
+    'textPrimaryColorPicker',
+    'textSecondaryColorPicker',
+    'cardBackgroundColorPicker',
+    'accentColorPicker',
+    'accentHoverColorPicker'
+  ].forEach(id => {
+    const cssVar = idToCssVar(id);
+    const computedVal = getComputedStyle(document.documentElement).getPropertyValue(cssVar).trim();
+    // fallback to #000000 if empty
+    document.getElementById(id).value = computedVal || '#000000';
+  });
+
+  // Update pickers UI
+  updatePickers();
+}
+
+function idToCssVar(id) {
+  const map = {
+    'backgroundColorPicker': '--color-background',
+    'textPrimaryColorPicker': '--color-text-primary',
+    'textSecondaryColorPicker': '--color-text-secondary',
+    'cardBackgroundColorPicker': '--color-card-background',
+    'accentColorPicker': '--color-accent',
+    'accentHoverColorPicker': '--color-accent-hover'
+  };
+  return map[id] || '';
+}
+
+function updateColor(cssVar, value) {
+  document.documentElement.style.setProperty(cssVar, value);
+  saveThemeColor(cssVar, value);
+}
+
+function saveThemeColor(cssVar, value) {
+  let colors = JSON.parse(localStorage.getItem('customColors') || '{}');
+  const mode = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+  if (!colors[mode]) colors[mode] = {};
+  colors[mode][cssVar] = value;
+  localStorage.setItem('customColors', JSON.stringify(colors));
+}
+
+function applySavedThemeColors() {
+  const colors = JSON.parse(localStorage.getItem('customColors') || '{}');
+  const mode = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+  if (colors[mode]) {
+    for (const [key, value] of Object.entries(colors[mode])) {
+      document.documentElement.style.setProperty(key, value);
+    }
+  }
+}
+
+function updatePickers() {
+  const colorVars = [
+    '--color-background',
+    '--color-text-primary',
+    '--color-text-secondary',
+    '--color-card-background',
+    '--color-accent',
+    '--color-accent-hover'
+  ];
+  const pickerIds = [
+    'backgroundColorPicker',
+    'textPrimaryColorPicker',
+    'textSecondaryColorPicker',
+    'cardBackgroundColorPicker',
+    'accentColorPicker',
+    'accentHoverColorPicker'
+  ];
+  colorVars.forEach((v, i) => {
+    const val = getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+    document.getElementById(pickerIds[i]).value = val || '#000000';
+  });
+}
+
+function setMode(mode) {
+  if (mode === 'dark') {
+    document.documentElement.classList.add('dark');
+    localStorage.setItem('theme', 'dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+    localStorage.setItem('theme', 'light');
+  }
+  applySavedThemeColors();
+  updatePickers();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  // Apply saved settings on load
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme) setMode(savedTheme);
+
+  applySavedThemeColors();
+  updatePickers();
+  applySavedFontSize();
+  applySavedFontFamily();
+  applySavedGrayscale();
+});
+</script>
+
     </main>
 
     <footer id="contact" class="py-20 bg-gray-100 dark:bg-gray-800 fade-in-section">
