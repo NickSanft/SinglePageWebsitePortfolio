@@ -428,27 +428,33 @@ template = """
     <div class="grid sm:grid-cols-2 gap-6 text-left">
       <div>
         <label class="block mb-2 font-semibold" for="backgroundColorPicker">Background Color</label>
-        <input type="color" id="backgroundColorPicker" class="w-full h-10 cursor-pointer" onchange="updateColor('--color-background', this.value)">
+        <input type="color" id="backgroundColorPicker" class="w-full h-10 cursor-pointer" 
+               oninput="updateColor('--color-background', this.value)">
       </div>
       <div>
         <label class="block mb-2 font-semibold" for="textPrimaryColorPicker">Primary Text Color</label>
-        <input type="color" id="textPrimaryColorPicker" class="w-full h-10 cursor-pointer" onchange="updateColor('--color-text-primary', this.value)">
+        <input type="color" id="textPrimaryColorPicker" class="w-full h-10 cursor-pointer" 
+               oninput="updateColor('--color-text-primary', this.value)">
       </div>
       <div>
         <label class="block mb-2 font-semibold" for="textSecondaryColorPicker">Secondary Text Color</label>
-        <input type="color" id="textSecondaryColorPicker" class="w-full h-10 cursor-pointer" onchange="updateColor('--color-text-secondary', this.value)">
+        <input type="color" id="textSecondaryColorPicker" class="w-full h-10 cursor-pointer" 
+               oninput="updateColor('--color-text-secondary', this.value)">
       </div>
       <div>
         <label class="block mb-2 font-semibold" for="cardBackgroundColorPicker">Card Background Color</label>
-        <input type="color" id="cardBackgroundColorPicker" class="w-full h-10 cursor-pointer" onchange="updateColor('--color-card-background', this.value)">
+        <input type="color" id="cardBackgroundColorPicker" class="w-full h-10 cursor-pointer" 
+               oninput="updateColor('--color-card-background', this.value)">
       </div>
       <div>
         <label class="block mb-2 font-semibold" for="accentColorPicker">Accent Color</label>
-        <input type="color" id="accentColorPicker" class="w-full h-10 cursor-pointer" onchange="updateColor('--color-accent', this.value)">
+        <input type="color" id="accentColorPicker" class="w-full h-10 cursor-pointer" 
+               oninput="updateColor('--color-accent', this.value)">
       </div>
       <div>
         <label class="block mb-2 font-semibold" for="accentHoverColorPicker">Accent Hover Color</label>
-        <input type="color" id="accentHoverColorPicker" class="w-full h-10 cursor-pointer" onchange="updateColor('--color-accent-hover', this.value)">
+        <input type="color" id="accentHoverColorPicker" class="w-full h-10 cursor-pointer" 
+               oninput="updateColor('--color-accent-hover', this.value)">
       </div>
     </div>
 
@@ -476,16 +482,26 @@ template = """
 </section>
 
 <style>
-:root {
-  --font-size-scale: 1;
-  --font-family-custom: 'Inter', sans-serif;
-  --grayscale: none;
-}
-html, body {
-  font-size: calc(16px * var(--font-size-scale));
-  font-family: var(--font-family-custom);
-  filter: var(--grayscale);
-}
+  :root {
+    --font-size-scale: 1;
+    --font-family-custom: 'Inter', sans-serif;
+    --grayscale: none;
+  }
+  html, body {
+    font-size: calc(16px * var(--font-size-scale));
+    font-family: var(--font-family-custom);
+    filter: var(--grayscale);
+  }
+
+  /* Fix font family dropdown text color on dark mode */
+  #fontFamilySelect {
+    color: black;
+    background-color: white;
+  }
+  .dark #fontFamilySelect {
+    color: white;
+    background-color: #2d2d2d;
+  }
 </style>
 
 <script>
@@ -498,6 +514,7 @@ function applySavedFontSize() {
   const size = localStorage.getItem('fontSize');
   if (size) {
     document.documentElement.style.setProperty('--font-size-scale', size);
+    document.getElementById('fontSizeSlider').value = size;
   }
 }
 
@@ -510,54 +527,55 @@ function applySavedFontFamily() {
   const family = localStorage.getItem('fontFamily');
   if (family) {
     document.documentElement.style.setProperty('--font-family-custom', family);
+    document.getElementById('fontFamilySelect').value = family;
   }
 }
 
 function toggleGrayscale(enable) {
   document.documentElement.style.setProperty('--grayscale', enable ? 'grayscale(100%)' : 'none');
   localStorage.setItem('grayscale', enable);
+  document.getElementById('grayscaleToggle').checked = enable;
 }
 
 function applySavedGrayscale() {
   const gs = localStorage.getItem('grayscale');
-  document.documentElement.style.setProperty('--grayscale', gs === 'true' ? 'grayscale(100%)' : 'none');
+  const enabled = gs === 'true';
+  document.documentElement.style.setProperty('--grayscale', enabled ? 'grayscale(100%)' : 'none');
+  document.getElementById('grayscaleToggle').checked = enabled;
 }
 
 function resetAllCustomizations() {
-  // Clear all stored customization keys
   localStorage.removeItem('customColors');
   localStorage.removeItem('fontSize');
   localStorage.removeItem('fontFamily');
   localStorage.removeItem('grayscale');
   localStorage.removeItem('theme');
 
-  // Reset CSS variables for colors
-  const defaultColors = {
-    '--color-background': '',
-    '--color-text-primary': '',
-    '--color-text-secondary': '',
-    '--color-card-background': '',
-    '--color-accent': '',
-    '--color-accent-hover': ''
-  };
-  for (const key in defaultColors) {
-    document.documentElement.style.removeProperty(key);
-  }
+  // Remove custom CSS vars
+  const cssVars = [
+    '--color-background',
+    '--color-text-primary',
+    '--color-text-secondary',
+    '--color-card-background',
+    '--color-accent',
+    '--color-accent-hover'
+  ];
+  cssVars.forEach(v => document.documentElement.style.removeProperty(v));
 
-  // Reset font size, family, and grayscale to defaults
+  // Reset font and grayscale defaults
   document.documentElement.style.setProperty('--font-size-scale', '1');
   document.documentElement.style.setProperty('--font-family-custom', "'Inter', sans-serif");
   document.documentElement.style.setProperty('--grayscale', 'none');
 
-  // Reset dark mode class and theme localStorage
+  // Reset dark mode to light
   document.documentElement.classList.remove('dark');
 
-  // Reset inputs to default values
+  // Reset UI controls
   document.getElementById('fontSizeSlider').value = 1;
   document.getElementById('fontFamilySelect').value = "'Inter', sans-serif";
   document.getElementById('grayscaleToggle').checked = false;
 
-  // Reset color pickers to reflect default CSS values or fallback
+  // Reset color pickers to computed styles or fallback black
   [
     'backgroundColorPicker',
     'textPrimaryColorPicker',
@@ -567,12 +585,10 @@ function resetAllCustomizations() {
     'accentHoverColorPicker'
   ].forEach(id => {
     const cssVar = idToCssVar(id);
-    const computedVal = getComputedStyle(document.documentElement).getPropertyValue(cssVar).trim();
-    // fallback to #000000 if empty
-    document.getElementById(id).value = computedVal || '#000000';
+    const val = getComputedStyle(document.documentElement).getPropertyValue(cssVar).trim() || '#000000';
+    document.getElementById(id).value = val;
   });
 
-  // Update pickers UI
   updatePickers();
 }
 
@@ -629,8 +645,8 @@ function updatePickers() {
     'accentHoverColorPicker'
   ];
   colorVars.forEach((v, i) => {
-    const val = getComputedStyle(document.documentElement).getPropertyValue(v).trim();
-    document.getElementById(pickerIds[i]).value = val || '#000000';
+    const val = getComputedStyle(document.documentElement).getPropertyValue(v).trim() || '#000000';
+    document.getElementById(pickerIds[i]).value = val;
   });
 }
 
@@ -647,7 +663,6 @@ function setMode(mode) {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-  // Apply saved settings on load
   const savedTheme = localStorage.getItem('theme');
   if (savedTheme) setMode(savedTheme);
 
