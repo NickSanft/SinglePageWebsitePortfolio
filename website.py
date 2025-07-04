@@ -458,10 +458,7 @@ def write_static_html():
 
     # Generate the main index.html file
     data = load_data()
-    # Use a modified template for file generation that uses relative paths
-    # This ensures it works when opening the file directly from the filesystem
-    file_template = template.replace('src="/static/', 'src="static/').replace('href="/static/', 'href="static/')
-    rendered = render_template_string(file_template, **data)
+    rendered = render_template_string(template, **data)
 
     index_path = os.path.join(output_dir, "index.html")
     with open(index_path, "w", encoding="utf-8") as f:
