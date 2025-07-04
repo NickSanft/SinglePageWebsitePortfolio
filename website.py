@@ -1,8 +1,13 @@
-from flask import Flask, render_template_string
+from flask import Flask, render_template_string, send_from_directory
 import os
 import json
+import datetime
+import requests
+import zipfile
+import io
 
-app = Flask(__name__, static_url_path='', static_folder='input')
+# --- UPDATED: Simplified Flask app setup, will add explicit routes ---
+app = Flask(__name__, static_url_path='', static_folder='output')
 
 
 # Load and process data from external JSON file
@@ -12,13 +17,11 @@ def load_data():
         dummy_data = {
             "website_title": "My Awesome Developer Portfolio",
             "portfolio_name": "MyPortfolio",
-            # --- NEW: Data for the Hero Section ---
             "hero_title": "Your Name",
             "hero_subtitle": "Software Developer | Python & JavaScript Enthusiast",
             "hero_image_url": "https://placehold.co/256x256/e0e0e0/333333?text=You",
             "about_me": "Hello! I'm a software developer with a passion for building clean and efficient solutions. I specialize in web development and enjoy working with Python, JavaScript, and modern front-end frameworks. My goal is to create impactful and user-friendly applications.",
             "projects": [
-                # --- UPDATED: Added featured flag, image_url, and tech_stack ---
                 {
                     "title": "Project Alpha",
                     "description": "A full-stack web application for managing tasks and collaborating with teams, built with a modern MERN stack.",
@@ -74,7 +77,8 @@ def load_data():
                 "bandcamp_url": "https://yourusername.bandcamp.com",
                 "kofi_url": "https://ko-fi.com/yourusername"
             },
-            "copyright_name": "Your Name"
+            "copyright_name": "Your Name",
+            "copyright_start_year": 2024
         }
         with open("website_data.json", "w", encoding="utf-8") as f:
             json.dump(dummy_data, f, indent=4)
@@ -82,7 +86,7 @@ def load_data():
     with open("website_data.json", "r", encoding="utf-8") as f:
         data = json.load(f)
 
-    # --- NEW: Logic to separate featured project from others ---
+    # Separate featured project from others
     projects = data.get("projects", [])
     data["featured_project"] = next((p for p in projects if p.get("featured")), None)
     data["other_projects"] = [p for p in projects if not p.get("featured")]
@@ -94,17 +98,20 @@ def load_data():
         sorted_experience = sorted(data["experience"], key=lambda x: x['period'], reverse=True)
         for job in sorted_experience:
             if job["company"] != current_company:
-                grouped_experience.append({
-                    "company": job["company"],
-                    "roles": []
-                })
+                grouped_experience.append({"company": job["company"], "roles": []})
                 current_company = job["company"]
-            grouped_experience[-1]["roles"].append({
-                "role": job["role"],
-                "period": job["period"],
-                "details": job["details"]
-            })
+            grouped_experience[-1]["roles"].append(
+                {"role": job["role"], "period": job["period"], "details": job["details"]})
     data["grouped_experience"] = grouped_experience
+
+    # Generate dynamic copyright string
+    start_year = data.get("copyright_start_year")
+    current_year = datetime.datetime.now().year
+    if start_year and start_year < current_year:
+        data["copyright_string"] = f"{start_year} - {current_year}"
+    else:
+        data["copyright_string"] = str(current_year)
+
     return data
 
 
@@ -116,8 +123,9 @@ template = """
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ website_title }}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- === UPDATED: Point to local static files with correct paths === -->
+    <script src="/static/tailwindcss.js"></script>
+    <link rel="stylesheet" href="/static/fontawesome-free-6.4.0-web/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
@@ -211,7 +219,6 @@ template = """
                 });
             }, observerOptions);
 
-            // --- FIX: Changed selector from 'section.fade-in-section' to '.fade-in-section' to include the footer ---
             document.querySelectorAll('.fade-in-section').forEach(element => { observer.observe(element); });
 
             document.getElementById('back-to-top-btn').addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); });
@@ -260,7 +267,6 @@ template = """
     </nav>
 
     <main class="container mx-auto px-4">
-        <!-- === NEW: Dynamic Hero Section (replaces old About section) === -->
         <section id="about" class="py-20 md:py-32 fade-in-section">
             <div class="max-w-6xl mx-auto flex flex-col-reverse md:flex-row items-center justify-center gap-10 md:gap-16">
                 <div class="text-center md:text-left stagger-item">
@@ -310,12 +316,10 @@ template = """
             </div>
         </section>
 
-        <!-- === UPDATED: Projects Section with Featured Project === -->
         <section id="projects" class="py-20 fade-in-section">
             <div class="max-w-5xl mx-auto">
                 <h2 class="text-4xl font-bold mb-12 text-center">Projects</h2>
 
-                <!-- Featured Project -->
                 {% if featured_project %}
                 <div class="mb-16 stagger-item">
                     <div class="interactive-card rounded-lg shadow-xl bg-white dark:bg-gray-800 overflow-hidden md:flex transform hover:-translate-y-2 transition-transform duration-300">
@@ -345,7 +349,6 @@ template = """
                 </div>
                 {% endif %}
 
-                <!-- Other Projects -->
                 <div class="grid md:grid-cols-2 gap-8">
                     {% for project in other_projects %}
                     <div class="interactive-card p-6 rounded-lg shadow-lg bg-white dark:bg-gray-800 stagger-item flex flex-col transform hover:-translate-y-1 transition-transform duration-300">
@@ -383,7 +386,7 @@ template = """
                 <a href="{{ contact_info.bandcamp_url }}" aria-label="Bandcamp" class="text-gray-700 dark:text-white hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded-full"><i class="fab fa-bandcamp fa-2x"></i></a>
                 <a href="{{ contact_info.kofi_url }}" aria-label="Ko-fi" class="text-gray-700 dark:text-white hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded-full"><i class="fas fa-coffee fa-2x"></i></a>
             </div>
-            <p class="mt-8 text-sm text-gray-500 dark:text-gray-400">&copy; 2025 {{ copyright_name }}</p>
+            <p class="mt-8 text-sm text-gray-500 dark:text-gray-400">&copy; {{ copyright_string }} {{ copyright_name }}</p>
         </div>
     </footer>
 
@@ -396,22 +399,81 @@ template = """
 """
 
 
+# --- UPDATED: Add explicit routes for root and static files for the dev server ---
 @app.route("/")
-def index():
-    data = load_data()
-    return render_template_string(template, **data)
+def serve_index():
+    # This route will now serve the pre-generated index.html for the dev server
+    return send_from_directory('output', 'index.html')
+
+
+@app.route('/<path:path>')
+def serve_static_root(path):
+    # This is needed to serve files like favicon.ico from the root of output
+    return send_from_directory('output', path)
 
 
 def write_static_html():
+    """
+    Generates the static HTML file and downloads remote assets to a local
+    'static' directory if they don't already exist.
+    """
+    output_dir = "output"
+    static_dir = os.path.join(output_dir, "static")
+    os.makedirs(static_dir, exist_ok=True)
+
+    # --- UPDATED: Logic to download and extract Font Awesome zip ---
+    fa_version = "6.4.0"
+    fa_zip_url = f"https://use.fontawesome.com/releases/v{fa_version}/fontawesome-free-{fa_version}-web.zip"
+    fa_extract_path = os.path.join(static_dir, f"fontawesome-free-{fa_version}-web")
+
+    if not os.path.exists(fa_extract_path):
+        try:
+            print(f"Downloading Font Awesome v{fa_version}...")
+            response = requests.get(fa_zip_url, timeout=30)
+            response.raise_for_status()
+
+            print("Extracting Font Awesome...")
+            with zipfile.ZipFile(io.BytesIO(response.content)) as z:
+                z.extractall(static_dir)
+            print("Successfully downloaded and extracted Font Awesome.")
+
+        except requests.exceptions.RequestException as e:
+            print(f"Error downloading Font Awesome: {e}")
+        except zipfile.BadZipFile:
+            print("Error: Downloaded file is not a valid zip file.")
+
+    # --- Logic to download Tailwind CSS ---
+    tailwind_url = "https://cdn.tailwindcss.com"
+    tailwind_local_path = os.path.join(static_dir, "tailwindcss.js")
+    if not os.path.exists(tailwind_local_path):
+        try:
+            print(f"Downloading tailwindcss.js...")
+            response = requests.get(tailwind_url, timeout=10)
+            response.raise_for_status()
+            with open(tailwind_local_path, "w", encoding="utf-8") as f:
+                f.write(response.text)
+            print(f"Successfully downloaded tailwindcss.js.")
+        except requests.exceptions.RequestException as e:
+            print(f"Error downloading tailwindcss.js: {e}")
+
+    # Generate the main index.html file
     data = load_data()
-    rendered = render_template_string(template, **data)
-    os.makedirs("output", exist_ok=True)
-    with open("output/index.html", "w", encoding="utf-8") as f:
+    # Use a modified template for file generation that uses relative paths
+    # This ensures it works when opening the file directly from the filesystem
+    file_template = template.replace('src="/static/', 'src="static/').replace('href="/static/', 'href="static/')
+    rendered = render_template_string(file_template, **data)
+
+    index_path = os.path.join(output_dir, "index.html")
+    with open(index_path, "w", encoding="utf-8") as f:
         f.write(rendered)
 
 
 if __name__ == "__main__":
+    # Generate all static files before starting the server
     with app.app_context():
         write_static_html()
-        print("Static HTML file generated in output/index.html")
+        print(f"Static HTML file and assets generated in 'output/' directory.")
+
+    # Run the development server
+    print("Starting development server at http://localhost:5000")
     app.run(debug=True)
