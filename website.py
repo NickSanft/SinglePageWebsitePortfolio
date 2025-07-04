@@ -21,6 +21,27 @@ def load_data():
             "hero_subtitle": "Software Developer | Python & JavaScript Enthusiast",
             "hero_image_url": "https://placehold.co/256x256/e0e0e0/333333?text=You",
             "about_me": "Hello! I'm a software developer with a passion for building clean and efficient solutions. I specialize in web development and enjoy working with Python, JavaScript, and modern front-end frameworks. My goal is to create impactful and user-friendly applications.",
+            # --- NEW: Configurable Theme Colors ---
+            "theme_colors": {
+                "light": {
+                    "background": "#f9fafb",
+                    "text_primary": "#111827",
+                    "text_secondary": "#4b5563",
+                    "card_background": "#ffffff",
+                    "accent": "#3b82f6",
+                    "accent_hover": "#2563eb",
+                    "spotlight_color": "rgba(255, 255, 255, 0.2)"
+                },
+                "dark": {
+                    "background": "#111827",
+                    "text_primary": "#f9fafb",
+                    "text_secondary": "#d1d5db",
+                    "card_background": "#1f2937",
+                    "accent": "#60a5fa",
+                    "accent_hover": "#3b82f6",
+                    "spotlight_color": "rgba(255, 255, 255, 0.1)"
+                }
+            },
             "projects": [
                 {
                     "title": "Project Alpha",
@@ -123,7 +144,6 @@ template = """
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ website_title }}</title>
-    <!-- === UPDATED: Point to local static files with correct paths === -->
     <script src="/static/tailwindcss.js"></script>
     <link rel="stylesheet" href="/static/fontawesome-free-6.4.0-web/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -141,9 +161,8 @@ template = """
 
         // Function to toggle theme and save preference to localStorage
         function toggleTheme() {
-            const isDark = document.documentElement.classList.toggle('dark');
-            localStorage.theme = isDark ? 'dark' : 'light';
-            applyNavbarTheme(); // Apply theme to navbar immediately
+            document.documentElement.classList.toggle('dark');
+            localStorage.theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
         }
 
         // Function to apply the interactive spotlight effect to cards
@@ -158,18 +177,6 @@ template = """
                     card.style.setProperty('--mouseY', `${y}px`);
                 }
             });
-        }
-
-        // Function to apply the correct navbar theme classes
-        function applyNavbarTheme() {
-            const navbar = document.querySelector('nav');
-            if (document.documentElement.classList.contains('dark')) {
-                navbar.classList.remove('bg-white', 'text-gray-900');
-                navbar.classList.add('bg-gray-800', 'text-gray-100');
-            } else {
-                navbar.classList.remove('bg-gray-800', 'text-gray-100');
-                navbar.classList.add('bg-white', 'text-gray-900');
-            }
         }
 
         // Function to update scroll progress bar
@@ -201,7 +208,6 @@ template = """
                 document.documentElement.classList.remove('dark');
             }
             applyInteractiveCardEffect();
-            applyNavbarTheme();
             window.addEventListener('scroll', updateScrollProgress);
             window.addEventListener('scroll', toggleBackToTopButton);
 
@@ -220,20 +226,42 @@ template = """
             }, observerOptions);
 
             document.querySelectorAll('.fade-in-section').forEach(element => { observer.observe(element); });
-
             document.getElementById('back-to-top-btn').addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); });
         });
     </script>
+    <!-- === NEW: Dynamic CSS Variables for Theming === -->
     <style>
+        :root {
+            --color-background: {{ theme_colors.light.background }};
+            --color-text-primary: {{ theme_colors.light.text_primary }};
+            --color-text-secondary: {{ theme_colors.light.text_secondary }};
+            --color-card-background: {{ theme_colors.light.card_background }};
+            --color-accent: {{ theme_colors.light.accent }};
+            --color-accent-hover: {{ theme_colors.light.accent_hover }};
+            --color-spotlight: {{ theme_colors.light.spotlight_color }};
+        }
+        .dark {
+            --color-background: {{ theme_colors.dark.background }};
+            --color-text-primary: {{ theme_colors.dark.text_primary }};
+            --color-text-secondary: {{ theme_colors.dark.text_secondary }};
+            --color-card-background: {{ theme_colors.dark.card_background }};
+            --color-accent: {{ theme_colors.dark.accent }};
+            --color-accent-hover: {{ theme_colors.dark.accent_hover }};
+            --color-spotlight: {{ theme_colors.dark.spotlight_color }};
+        }
         html { scroll-behavior: smooth; }
-        body { font-family: 'Inter', sans-serif; transition: background-color 0.3s, color 0.3s; }
-        #scroll-progress-bar { position: fixed; top: 0; left: 0; height: 4px; background-color: #3b82f6; width: 0%; z-index: 50; transition: width 0.1s linear; }
-        #back-to-top-btn { position: fixed; bottom: 1.5rem; right: 1.5rem; background-color: #3b82f6; color: white; padding: 0.75rem; border-radius: 9999px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out; opacity: 0; visibility: hidden; z-index: 40; cursor: pointer; }
-        #back-to-top-btn:hover { background-color: #2563eb; }
-        #back-to-top-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5); }
-        .interactive-card { position: relative; overflow: hidden; }
-        .interactive-card::before { content: ""; position: absolute; left: 0; top: 0; width: 100%; height: 100%; border-radius: inherit; background: radial-gradient(400px circle at var(--mouseX) var(--mouseY), rgba(255, 255, 255, 0.2), transparent 40%); opacity: 0; transition: opacity 0.3s ease-in-out; z-index: 1; }
-        .dark .interactive-card::before { background: radial-gradient(400px circle at var(--mouseX) var(--mouseY), rgba(255, 255, 255, 0.1), transparent 40%); }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--color-background);
+            color: var(--color-text-primary);
+            transition: background-color 0.3s, color 0.3s; 
+        }
+        #scroll-progress-bar { position: fixed; top: 0; left: 0; height: 4px; background-color: var(--color-accent); width: 0%; z-index: 50; transition: width 0.1s linear; }
+        #back-to-top-btn { position: fixed; bottom: 1.5rem; right: 1.5rem; background-color: var(--color-accent); color: white; padding: 0.75rem; border-radius: 9999px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out, background-color 0.3s; opacity: 0; visibility: hidden; z-index: 40; cursor: pointer; }
+        #back-to-top-btn:hover { background-color: var(--color-accent-hover); }
+        #back-to-top-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--color-accent); }
+        .interactive-card { position: relative; overflow: hidden; background-color: var(--color-card-background); }
+        .interactive-card::before { content: ""; position: absolute; left: 0; top: 0; width: 100%; height: 100%; border-radius: inherit; background: radial-gradient(400px circle at var(--mouseX) var(--mouseY), var(--color-spotlight), transparent 40%); opacity: 0; transition: opacity 0.3s ease-in-out; z-index: 1; }
         .interactive-card:hover::before { opacity: 1; }
         .interactive-card > * { position: relative; z-index: 2; }
         .fade-in-section { opacity: 0; transition: opacity 0.5s ease-out; }
@@ -243,22 +271,22 @@ template = """
         @media (prefers-reduced-motion: reduce) { .fade-in-section, .stagger-item, #back-to-top-btn { transition: none !important; transform: none !important; opacity: 1 !important; } }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
+<body class="bg-[var(--color-background)] text-[var(--color-text-primary)]">
 
     <div id="scroll-progress-bar"></div>
 
-    <nav class="sticky top-0 shadow-md z-40 transition-colors duration-300 bg-white dark:bg-gray-800">
+    <nav class="sticky top-0 shadow-md z-40 transition-colors duration-300 bg-[var(--color-card-background)]">
         <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <a href="#" class="text-2xl font-bold text-gray-900 dark:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded">{{ portfolio_name }}</a>
+            <a href="#" class="text-2xl font-bold text-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded">{{ portfolio_name }}</a>
             <div class="flex items-center space-x-4">
-                <div class="hidden sm:flex space-x-6 text-gray-900 dark:text-gray-100">
-                    <a href="#about" class="hover:text-blue-600 dark:hover:text-blue-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded">About</a>
-                    <a href="#experience" class="hover:text-blue-600 dark:hover:text-blue-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded">Experience</a>
-                    <a href="#skills" class="hover:text-blue-600 dark:hover:text-blue-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded">Skills</a>
-                    <a href="#projects" class="hover:text-blue-600 dark:hover:text-blue-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded">Projects</a>
-                    <a href="#contact" class="hover:text-blue-600 dark:hover:text-blue-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded">Contact</a>
+                <div class="hidden sm:flex space-x-6 text-[var(--color-text-primary)]">
+                    <a href="#about" class="hover:text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded">About</a>
+                    <a href="#experience" class="hover:text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded">Experience</a>
+                    <a href="#skills" class="hover:text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded">Skills</a>
+                    <a href="#projects" class="hover:text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded">Projects</a>
+                    <a href="#contact" class="hover:text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded">Contact</a>
                 </div>
-                <button onclick="toggleTheme()" aria-label="Toggle Theme" class="px-3 py-2 rounded-md shadow transition-colors duration-300 bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
+                <button onclick="toggleTheme()" aria-label="Toggle Theme" class="px-3 py-2 rounded-md shadow transition-colors duration-300 bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2">
                     <i class="fas fa-moon hidden dark:inline"></i>
                     <i class="fas fa-sun inline dark:hidden"></i>
                 </button>
@@ -270,9 +298,9 @@ template = """
         <section id="about" class="py-20 md:py-32 fade-in-section">
             <div class="max-w-6xl mx-auto flex flex-col-reverse md:flex-row items-center justify-center gap-10 md:gap-16">
                 <div class="text-center md:text-left stagger-item">
-                    <h1 class="text-4xl md:text-6xl font-bold mb-2 text-gray-900 dark:text-white">{{ hero_title }}</h1>
-                    <p class="text-xl md:text-2xl text-blue-600 dark:text-blue-400 font-semibold mb-4">{{ hero_subtitle }}</p>
-                    <p class="text-lg text-gray-700 dark:text-gray-300 max-w-2xl">{{ about_me }}</p>
+                    <h1 class="text-4xl md:text-6xl font-bold mb-2 text-[var(--color-text-primary)]">{{ hero_title }}</h1>
+                    <p class="text-xl md:text-2xl text-[var(--color-accent)] font-semibold mb-4">{{ hero_subtitle }}</p>
+                    <p class="text-lg text-[var(--color-text-secondary)] max-w-2xl">{{ about_me }}</p>
                 </div>
                 <div class="flex-shrink-0 stagger-item">
                      <img src="{{ hero_image_url }}" alt="A picture of {{ copyright_name }}" class="rounded-full w-48 h-48 md:w-64 md:h-64 object-cover shadow-2xl border-4 border-white dark:border-gray-700 transform hover:scale-105 transition-transform duration-300">
@@ -285,14 +313,14 @@ template = """
                 <h2 class="text-4xl font-bold mb-8 text-center">Work Experience</h2>
                 <ul class="space-y-8">
                     {% for company_group in grouped_experience %}
-                    <li class="interactive-card p-6 rounded-lg shadow-lg bg-white dark:bg-gray-800 stagger-item">
-                        <h3 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">{{ company_group.company }}</h3>
-                        <ul class="space-y-4 pl-5 border-l-2 border-blue-500 dark:border-blue-400">
+                    <li class="interactive-card p-6 rounded-lg shadow-lg stagger-item">
+                        <h3 class="text-2xl font-bold mb-4 text-[var(--color-text-primary)]">{{ company_group.company }}</h3>
+                        <ul class="space-y-4 pl-5 border-l-2 border-[var(--color-accent)]">
                             {% for job in company_group.roles %}
                             <li class="stagger-item">
-                                <strong class="text-xl text-gray-800 dark:text-gray-200">{{ job.role }}</strong>
+                                <strong class="text-xl text-[var(--color-text-primary)]">{{ job.role }}</strong>
                                 <span class="block text-sm text-gray-500 dark:text-gray-400">{{ job.period }}</span>
-                                <p class="mt-1 text-gray-600 dark:text-gray-300">{{ job.details }}</p>
+                                <p class="mt-1 text-[var(--color-text-secondary)]">{{ job.details }}</p>
                             </li>
                             {% endfor %}
                         </ul>
@@ -307,8 +335,8 @@ template = """
                 <h2 class="text-4xl font-bold mb-8">Skills</h2>
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
                     {% for skill in skills %}
-                    <div class="stagger-item flex flex-col items-center justify-center p-4 rounded-lg shadow-md bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100 transform hover:scale-105 transition-transform duration-300">
-                        <i class="{{ skill.icon }} text-4xl mb-2 text-blue-500"></i>
+                    <div class="stagger-item flex flex-col items-center justify-center p-4 rounded-lg shadow-md bg-gray-100 dark:bg-gray-800 text-[var(--color-text-primary)] transform hover:scale-105 transition-transform duration-300">
+                        <i class="{{ skill.icon }} text-4xl mb-2 text-[var(--color-accent)]"></i>
                         <span>{{ skill.name }}</span>
                     </div>
                     {% endfor %}
@@ -322,24 +350,24 @@ template = """
 
                 {% if featured_project %}
                 <div class="mb-16 stagger-item">
-                    <div class="interactive-card rounded-lg shadow-xl bg-white dark:bg-gray-800 overflow-hidden md:flex transform hover:-translate-y-2 transition-transform duration-300">
+                    <div class="interactive-card rounded-lg shadow-xl overflow-hidden md:flex transform hover:-translate-y-2 transition-transform duration-300">
                         <div class="md:w-1/2 bg-gray-200 dark:bg-gray-700">
                             <img src="{{ featured_project.image_url }}" alt="{{ featured_project.title }} screenshot" class="object-cover w-full h-full min-h-[250px]">
                         </div>
                         <div class="p-8 md:w-1/2 flex flex-col justify-center">
                             <div>
                                 <h3 class="text-2xl font-bold mb-2">
-                                    <i class="{{ featured_project.icon }} text-blue-500 mr-2"></i>
+                                    <i class="{{ featured_project.icon }} text-[var(--color-accent)] mr-2"></i>
                                     {{ featured_project.title }}
                                 </h3>
-                                <p class="text-gray-600 dark:text-gray-300 mb-4">{{ featured_project.description }}</p>
+                                <p class="text-[var(--color-text-secondary)] mb-4">{{ featured_project.description }}</p>
                                 <div class="flex flex-wrap gap-2 mb-4">
                                     {% for tech in featured_project.tech_stack %}
                                     <span class="bg-blue-100 text-blue-800 text-sm font-semibold px-3 py-1 rounded-full dark:bg-blue-900 dark:text-blue-200">{{ tech }}</span>
                                     {% endfor %}
                                 </div>
                                 {% if featured_project.url %}
-                                <a href="{{ featured_project.url }}" target="_blank" rel="noopener noreferrer" class="inline-block mt-2 font-semibold text-blue-600 dark:text-blue-400 hover:underline">
+                                <a href="{{ featured_project.url }}" target="_blank" rel="noopener noreferrer" class="inline-block mt-2 font-semibold text-[var(--color-accent)] hover:underline">
                                     View Project <i class="fas fa-external-link-alt ml-1 text-xs"></i>
                                 </a>
                                 {% endif %}
@@ -351,13 +379,13 @@ template = """
 
                 <div class="grid md:grid-cols-2 gap-8">
                     {% for project in other_projects %}
-                    <div class="interactive-card p-6 rounded-lg shadow-lg bg-white dark:bg-gray-800 stagger-item flex flex-col transform hover:-translate-y-1 transition-transform duration-300">
+                    <div class="interactive-card p-6 rounded-lg shadow-lg stagger-item flex flex-col transform hover:-translate-y-1 transition-transform duration-300">
                         <div class="flex-grow">
                             <h3 class="text-2xl font-bold mb-2">
-                                <i class="{{ project.icon }} text-blue-500 mr-2"></i>
+                                <i class="{{ project.icon }} text-[var(--color-accent)] mr-2"></i>
                                 {{ project.title }}
                             </h3>
-                            <p class="text-gray-600 dark:text-gray-300 mb-4">{{ project.description }}</p>
+                            <p class="text-[var(--color-text-secondary)] mb-4">{{ project.description }}</p>
                             <div class="flex flex-wrap gap-2 mb-4">
                                 {% for tech in project.tech_stack %}
                                 <span class="bg-gray-200 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-gray-700 dark:text-gray-300">{{ tech }}</span>
@@ -365,7 +393,7 @@ template = """
                             </div>
                         </div>
                         {% if project.url %}
-                        <a href="{{ project.url }}" target="_blank" rel="noopener noreferrer" class="font-semibold text-blue-600 dark:text-blue-400 hover:underline self-start">
+                        <a href="{{ project.url }}" target="_blank" rel="noopener noreferrer" class="font-semibold text-[var(--color-accent)] hover:underline self-start">
                             View Project <i class="fas fa-external-link-alt ml-1 text-xs"></i>
                         </a>
                         {% endif %}
@@ -379,12 +407,12 @@ template = """
     <footer id="contact" class="py-20 bg-gray-100 dark:bg-gray-800 fade-in-section">
         <div class="max-w-4xl mx-auto px-4 text-center">
             <h2 class="text-3xl font-bold mb-4">Contact</h2>
-            <p class="mb-6 text-gray-700 dark:text-gray-300">Feel free to connect with me!</p>
+            <p class="mb-6 text-[var(--color-text-secondary)]">Feel free to connect with me!</p>
             <div class="flex justify-center space-x-6">
-                <a href="{{ contact_info.github_url }}" aria-label="GitHub" class="text-gray-700 dark:text-white hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded-full"><i class="fab fa-github fa-2x"></i></a>
-                <a href="{{ contact_info.linkedin_url }}" aria-label="LinkedIn" class="text-gray-700 dark:text-white hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded-full"><i class="fab fa-linkedin fa-2x"></i></a>
-                <a href="{{ contact_info.bandcamp_url }}" aria-label="Bandcamp" class="text-gray-700 dark:text-white hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded-full"><i class="fab fa-bandcamp fa-2x"></i></a>
-                <a href="{{ contact_info.kofi_url }}" aria-label="Ko-fi" class="text-gray-700 dark:text-white hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded-full"><i class="fas fa-coffee fa-2x"></i></a>
+                <a href="{{ contact_info.github_url }}" aria-label="GitHub" class="text-[var(--color-text-primary)] hover:text-[var(--color-accent)] transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded-full"><i class="fab fa-github fa-2x"></i></a>
+                <a href="{{ contact_info.linkedin_url }}" aria-label="LinkedIn" class="text-[var(--color-text-primary)] hover:text-[var(--color-accent)] transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded-full"><i class="fab fa-linkedin fa-2x"></i></a>
+                <a href="{{ contact_info.bandcamp_url }}" aria-label="Bandcamp" class="text-[var(--color-text-primary)] hover:text-[var(--color-accent)] transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded-full"><i class="fab fa-bandcamp fa-2x"></i></a>
+                <a href="{{ contact_info.kofi_url }}" aria-label="Ko-fi" class="text-[var(--color-text-primary)] hover:text-[var(--color-accent)] transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded-full"><i class="fas fa-coffee fa-2x"></i></a>
             </div>
             <p class="mt-8 text-sm text-gray-500 dark:text-gray-400">&copy; {{ copyright_string }} {{ copyright_name }}</p>
         </div>
@@ -399,16 +427,14 @@ template = """
 """
 
 
-# --- UPDATED: Add explicit routes for root and static files for the dev server ---
 @app.route("/")
 def serve_index():
-    # This route will now serve the pre-generated index.html for the dev server
-    return send_from_directory('output', 'index.html')
+    data = load_data()
+    return render_template_string(template, **data)
 
 
 @app.route('/<path:path>')
 def serve_static_root(path):
-    # This is needed to serve files like favicon.ico from the root of output
     return send_from_directory('output', path)
 
 
@@ -421,7 +447,6 @@ def write_static_html():
     static_dir = os.path.join(output_dir, "static")
     os.makedirs(static_dir, exist_ok=True)
 
-    # --- UPDATED: Logic to download and extract Font Awesome zip ---
     fa_version = "6.4.0"
     fa_zip_url = f"https://use.fontawesome.com/releases/v{fa_version}/fontawesome-free-{fa_version}-web.zip"
     fa_extract_path = os.path.join(static_dir, f"fontawesome-free-{fa_version}-web")
@@ -442,7 +467,6 @@ def write_static_html():
         except zipfile.BadZipFile:
             print("Error: Downloaded file is not a valid zip file.")
 
-    # --- Logic to download Tailwind CSS ---
     tailwind_url = "https://cdn.tailwindcss.com"
     tailwind_local_path = os.path.join(static_dir, "tailwindcss.js")
     if not os.path.exists(tailwind_local_path):
@@ -456,21 +480,24 @@ def write_static_html():
         except requests.exceptions.RequestException as e:
             print(f"Error downloading tailwindcss.js: {e}")
 
-    # Generate the main index.html file
     data = load_data()
-    rendered = render_template_string(template, **data)
+    # For the dev server, use absolute paths
+    server_template = template
+    rendered_for_server = render_template_string(server_template, **data)
+
+    # For the static file, use relative paths
+    file_template = template.replace('src="/static/', 'src="static/').replace('href="/static/', 'href="static/')
+    rendered_for_file = render_template_string(file_template, **data)
 
     index_path = os.path.join(output_dir, "index.html")
     with open(index_path, "w", encoding="utf-8") as f:
-        f.write(rendered)
+        f.write(rendered_for_file)
 
 
 if __name__ == "__main__":
-    # Generate all static files before starting the server
     with app.app_context():
         write_static_html()
         print(f"Static HTML file and assets generated in 'output/' directory.")
 
-    # Run the development server
     print("Starting development server at http://localhost:5000")
     app.run(debug=True)
