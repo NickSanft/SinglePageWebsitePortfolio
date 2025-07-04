@@ -402,6 +402,135 @@ template = """
                 </div>
             </div>
         </section>
+        <section id="play" class="py-20 fade-in-section">
+          <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-4xl font-bold mb-8">Play with this website!</h2>
+            <p class="mb-4 text-[var(--color-text-secondary)]">Choose your own theme colors below and see the changes in real-time. Your changes will apply separately for light and dark mode and be saved locally.</p>
+        
+            <div class="mb-8">
+              <button onclick="setMode('light')" class="px-4 py-2 rounded bg-gray-300 text-black dark:bg-gray-600 dark:text-white hover:bg-gray-400 dark:hover:bg-gray-500 mr-2">Edit Light Theme</button>
+              <button onclick="setMode('dark')" class="px-4 py-2 rounded bg-gray-800 text-white hover:bg-gray-700 mr-2">Edit Dark Theme</button>
+              <button onclick="resetThemeColors()" class="px-4 py-2 rounded bg-red-500 text-white hover:bg-red-600">Reset to Default</button>
+            </div>
+        
+            <div class="grid sm:grid-cols-2 gap-6 text-left">
+              <div>
+                <label class="block mb-2 font-semibold" for="backgroundColorPicker">Background Color</label>
+                <input type="color" id="backgroundColorPicker" class="w-full h-10 cursor-pointer">
+              </div>
+              <div>
+                <label class="block mb-2 font-semibold" for="textPrimaryColorPicker">Primary Text Color</label>
+                <input type="color" id="textPrimaryColorPicker" class="w-full h-10 cursor-pointer">
+              </div>
+              <div>
+                <label class="block mb-2 font-semibold" for="textSecondaryColorPicker">Secondary Text Color</label>
+                <input type="color" id="textSecondaryColorPicker" class="w-full h-10 cursor-pointer">
+              </div>
+              <div>
+                <label class="block mb-2 font-semibold" for="cardBackgroundColorPicker">Card Background Color</label>
+                <input type="color" id="cardBackgroundColorPicker" class="w-full h-10 cursor-pointer">
+              </div>
+              <div>
+                <label class="block mb-2 font-semibold" for="accentColorPicker">Accent Color</label>
+                <input type="color" id="accentColorPicker" class="w-full h-10 cursor-pointer">
+              </div>
+              <div>
+                <label class="block mb-2 font-semibold" for="accentHoverColorPicker">Accent Hover Color</label>
+                <input type="color" id="accentHoverColorPicker" class="w-full h-10 cursor-pointer">
+              </div>
+            </div>
+          </div>
+        
+          <script>
+            let activeMode = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+        
+            const defaultColors = {
+              light: {
+                '--color-background': '{{ theme_colors.light.background }}',
+                '--color-text-primary': '{{ theme_colors.light.text_primary }}',
+                '--color-text-secondary': '{{ theme_colors.light.text_secondary }}',
+                '--color-card-background': '{{ theme_colors.light.card_background }}',
+                '--color-accent': '{{ theme_colors.light.accent }}',
+                '--color-accent-hover': '{{ theme_colors.light.accent_hover }}'
+              },
+              dark: {
+                '--color-background': '{{ theme_colors.dark.background }}',
+                '--color-text-primary': '{{ theme_colors.dark.text_primary }}',
+                '--color-text-secondary': '{{ theme_colors.dark.text_secondary }}',
+                '--color-card-background': '{{ theme_colors.dark.card_background }}',
+                '--color-accent': '{{ theme_colors.dark.accent }}',
+                '--color-accent-hover': '{{ theme_colors.dark.accent_hover }}'
+              }
+            };
+        
+            function setMode(mode) {
+              activeMode = mode;
+              updatePickers();
+            }
+        
+            function setCSSVariable(varName, value) {
+              document.documentElement.style.setProperty(varName, value);
+              saveThemeColor(varName, value);
+            }
+        
+            function saveThemeColor(varName, value) {
+              const saved = JSON.parse(localStorage.getItem('customColors') || '{}');
+              if (!saved[activeMode]) saved[activeMode] = {};
+              saved[activeMode][varName] = value;
+              localStorage.setItem('customColors', JSON.stringify(saved));
+            }
+        
+            function applySavedThemeColors() {
+              const saved = JSON.parse(localStorage.getItem('customColors') || '{}');
+              ['light', 'dark'].forEach(mode => {
+                const vars = saved[mode] || {};
+                for (const key in vars) {
+                  if (mode === 'dark') document.documentElement.classList.add('dark');
+                  document.documentElement.style.setProperty(key, vars[key]);
+                }
+              });
+            }
+        
+            function updatePickers() {
+              colorInputs.forEach(({ id, cssVar }) => {
+                const input = document.getElementById(id);
+                const computedStyles = getComputedStyle(document.documentElement);
+                input.value = computedStyles.getPropertyValue(cssVar).trim();
+              });
+            }
+        
+            function resetThemeColors() {
+              localStorage.removeItem('customColors');
+              for (const mode of ['light', 'dark']) {
+                for (const key in defaultColors[mode]) {
+                  if (mode === 'dark') document.documentElement.classList.add('dark');
+                  document.documentElement.style.setProperty(key, defaultColors[mode][key]);
+                }
+              }
+              updatePickers();
+            }
+        
+            const colorInputs = [
+              { id: 'backgroundColorPicker', cssVar: '--color-background' },
+              { id: 'textPrimaryColorPicker', cssVar: '--color-text-primary' },
+              { id: 'textSecondaryColorPicker', cssVar: '--color-text-secondary' },
+              { id: 'cardBackgroundColorPicker', cssVar: '--color-card-background' },
+              { id: 'accentColorPicker', cssVar: '--color-accent' },
+              { id: 'accentHoverColorPicker', cssVar: '--color-accent-hover' }
+            ];
+        
+            colorInputs.forEach(({ id, cssVar }) => {
+              const input = document.getElementById(id);
+              input.addEventListener('input', (e) => {
+                setCSSVariable(cssVar, e.target.value);
+              });
+            });
+        
+            applySavedThemeColors();
+            updatePickers();
+          </script>
+</section>
+        
     </main>
 
     <footer id="contact" class="py-20 bg-gray-100 dark:bg-gray-800 fade-in-section">
