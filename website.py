@@ -155,20 +155,26 @@ template = """
                     fontFamily: {
                         inter: ['Inter', 'sans-serif'],
                     },
+                    keyframes: {
+                        flash: {
+                          '0%, 100%': { backgroundColor: 'transparent' },
+                          '50%': { backgroundColor: 'rgba(59, 130, 246, 0.2)' },
+                        }
+                    },
+                    animation: {
+                        flash: 'flash 1s ease-in-out',
+                    }
                 },
             },
         }
 
-        // --- NEW: Store the default section order on page load ---
         let defaultSectionOrder = [];
 
-        // Function to toggle theme and save preference to localStorage
         function toggleTheme() {
             document.documentElement.classList.toggle('dark');
             localStorage.theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
         }
 
-        // Function to apply the interactive spotlight effect to cards
         function applyInteractiveCardEffect() {
             document.addEventListener('mousemove', e => {
                 const cards = document.querySelectorAll('.interactive-card');
@@ -182,7 +188,6 @@ template = """
             });
         }
 
-        // Function to update scroll progress bar
         function updateScrollProgress() {
             const progressBar = document.getElementById('scroll-progress-bar');
             const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
@@ -191,7 +196,6 @@ template = """
             progressBar.style.width = percentage + '%';
         }
 
-        // Function to toggle back-to-top button visibility
         function toggleBackToTopButton() {
             const backToTopBtn = document.getElementById('back-to-top-btn');
             if (window.scrollY > 300) {
@@ -203,7 +207,6 @@ template = """
             }
         }
 
-        // Intersection Observer for fade-in/slide-up effect with staggering
         document.addEventListener('DOMContentLoaded', () => {
             if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                 document.documentElement.classList.add('dark');
@@ -290,9 +293,19 @@ template = """
         .sortable-chosen {
             cursor: grabbing;
         }
+        .grabbing {
+            cursor: grabbing;
+            outline: 2px solid var(--color-accent);
+            outline-offset: 2px;
+        }
     </style>
 </head>
 <body class="bg-[var(--color-background)] text-[var(--color-text-primary)]">
+
+    <!-- === NEW: Skip to Main Content Link for Accessibility === -->
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-4 focus:left-4 focus:px-4 focus:py-2 focus:bg-[var(--color-card-background)] focus:text-[var(--color-text-primary)] focus:rounded-lg">
+      Skip to main content
+    </a>
 
     <div id="scroll-progress-bar"></div>
 
@@ -424,9 +437,8 @@ template = """
             </div>
         </section>
 
-        <!-- === UPDATED: Moved Play Section and added logic for no-reload reset === -->
         <section id="play" class="py-20 fade-in-section">
-          <div class="max-w-4xl mx-auto text-center">
+          <div id="play-controls" class="max-w-4xl mx-auto text-center">
             <h2 class="text-4xl font-bold mb-8">Play with this website!</h2>
             <div class="grid md:grid-cols-2 gap-12 text-left">
                 <div>
@@ -465,12 +477,12 @@ template = """
                 </div>
                 <div>
                     <h3 class="text-2xl font-semibold mb-4 text-center md:text-left">Arrange Sections</h3>
-                    <p class="mb-4 text-[var(--color-text-secondary)]">Drag and drop the sections below to reorder the page layout.</p>
+                    <p class="mb-4 text-[var(--color-text-secondary)]">Drag and drop the sections below, or use your keyboard (Enter/Space to grab, Arrows to move, Esc to drop).</p>
                     <ol id="section-sorter" class="space-y-2">
-                        <li data-section-id="experience" class="p-3 rounded-lg shadow-md cursor-grab bg-gray-100 dark:bg-gray-800 text-[var(--color-text-primary)] flex items-center"><i class="fas fa-grip-vertical mr-3 text-gray-400"></i>Experience</li>
-                        <li data-section-id="skills" class="p-3 rounded-lg shadow-md cursor-grab bg-gray-100 dark:bg-gray-800 text-[var(--color-text-primary)] flex items-center"><i class="fas fa-grip-vertical mr-3 text-gray-400"></i>Skills</li>
-                        <li data-section-id="projects" class="p-3 rounded-lg shadow-md cursor-grab bg-gray-100 dark:bg-gray-800 text-[var(--color-text-primary)] flex items-center"><i class="fas fa-grip-vertical mr-3 text-gray-400"></i>Projects</li>
-                        <li data-section-id="play" class="p-3 rounded-lg shadow-md cursor-grab bg-gray-100 dark:bg-gray-800 text-[var(--color-text-primary)] flex items-center"><i class="fas fa-grip-vertical mr-3 text-gray-400"></i>Play Section</li>
+                        <li data-section-id="experience" tabindex="0" aria-roledescription="Draggable section" aria-grabbed="false" class="p-3 rounded-lg shadow-md cursor-grab bg-gray-100 dark:bg-gray-800 text-[var(--color-text-primary)] flex items-center focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"><i class="fas fa-grip-vertical mr-3 text-gray-400"></i>Experience</li>
+                        <li data-section-id="skills" tabindex="0" aria-roledescription="Draggable section" aria-grabbed="false" class="p-3 rounded-lg shadow-md cursor-grab bg-gray-100 dark:bg-gray-800 text-[var(--color-text-primary)] flex items-center focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"><i class="fas fa-grip-vertical mr-3 text-gray-400"></i>Skills</li>
+                        <li data-section-id="projects" tabindex="0" aria-roledescription="Draggable section" aria-grabbed="false" class="p-3 rounded-lg shadow-md cursor-grab bg-gray-100 dark:bg-gray-800 text-[var(--color-text-primary)] flex items-center focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"><i class="fas fa-grip-vertical mr-3 text-gray-400"></i>Projects</li>
+                        <li data-section-id="play" tabindex="0" aria-roledescription="Draggable section" aria-grabbed="false" class="p-3 rounded-lg shadow-md cursor-grab bg-gray-100 dark:bg-gray-800 text-[var(--color-text-primary)] flex items-center focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"><i class="fas fa-grip-vertical mr-3 text-gray-400"></i>Play Section</li>
                     </ol>
                 </div>
             </div>
@@ -498,12 +510,10 @@ template = """
 <script>
 function initSectionReordering() {
     const sorter = document.getElementById('section-sorter');
-    const mainContent = document.getElementById('main-content');
+    let grabbedItem = null;
 
-    // Store the default order on initial load
     defaultSectionOrder = Array.from(sorter.children).map(item => item.dataset.sectionId);
 
-    // Apply saved order on load
     const savedOrder = JSON.parse(localStorage.getItem('sectionOrder'));
     if (savedOrder) {
         applySectionOrder(savedOrder);
@@ -513,11 +523,63 @@ function initSectionReordering() {
         animation: 150,
         ghostClass: 'sortable-ghost',
         chosenClass: 'sortable-chosen',
-        onEnd: function (evt) {
+        onEnd: function () {
             const newOrder = Array.from(sorter.children).map(item => item.dataset.sectionId);
             saveSectionOrder(newOrder);
             applySectionOrder(newOrder);
         },
+    });
+
+    sorter.addEventListener('keydown', (e) => {
+        const target = e.target;
+        if (target.tagName !== 'LI') return;
+
+        if (e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault();
+            if (grabbedItem === target) {
+                // Drop item
+                grabbedItem.classList.remove('grabbing');
+                grabbedItem.setAttribute('aria-grabbed', 'false');
+                grabbedItem = null;
+            } else {
+                // Grab item
+                if (grabbedItem) {
+                    grabbedItem.classList.remove('grabbing');
+                    grabbedItem.setAttribute('aria-grabbed', 'false');
+                }
+                grabbedItem = target;
+                grabbedItem.classList.add('grabbing');
+                grabbedItem.setAttribute('aria-grabbed', 'true');
+            }
+        }
+
+        if (grabbedItem) {
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                const prevSibling = grabbedItem.previousElementSibling;
+                if (prevSibling) {
+                    sorter.insertBefore(grabbedItem, prevSibling);
+                    grabbedItem.focus();
+                }
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                const nextSibling = grabbedItem.nextElementSibling;
+                if (nextSibling) {
+                    sorter.insertBefore(grabbedItem, nextSibling.nextElementSibling);
+                    grabbedItem.focus();
+                }
+            } else if (e.key === 'Escape') {
+                grabbedItem.classList.remove('grabbing');
+                grabbedItem.setAttribute('aria-grabbed', 'false');
+                grabbedItem = null;
+            }
+
+            if (['ArrowUp', 'ArrowDown'].includes(e.key)) {
+                const newOrder = Array.from(sorter.children).map(item => item.dataset.sectionId);
+                saveSectionOrder(newOrder);
+                applySectionOrder(newOrder);
+            }
+        }
     });
 }
 
@@ -544,26 +606,26 @@ function applySectionOrder(order) {
     });
 }
 
-// --- UPDATED: Reset function no longer reloads the page ---
 function resetAllCustomizations() {
-  // 1. Clear all customizations from localStorage
   localStorage.removeItem('customColors');
   localStorage.removeItem('theme');
   localStorage.removeItem('sectionOrder');
 
-  // 2. Reset Theme without reloading
-  // Remove all inline style properties to revert to stylesheet defaults
   const colorVars = [
     '--color-background', '--color-text-primary', '--color-text-secondary',
     '--color-card-background', '--color-accent', '--color-accent-hover'
   ];
   colorVars.forEach(v => document.documentElement.style.removeProperty(v));
 
-  // Set back to default light theme and update color pickers to match
   setMode('light');
-
-  // 3. Reset Section Order without reloading
   applySectionOrder(defaultSectionOrder);
+
+  // Add flash effect for visual feedback
+  const playControls = document.getElementById('play-controls');
+  playControls.classList.add('animate-flash');
+  setTimeout(() => {
+    playControls.classList.remove('animate-flash');
+  }, 1000);
 }
 
 function idToCssVar(id) {
@@ -619,12 +681,10 @@ function updatePickers() {
     'accentHoverColorPicker'
   ];
   colorVars.forEach((v, i) => {
-    // Temporarily remove inline style to get the default from the stylesheet
     const originalValue = document.documentElement.style.getPropertyValue(v);
     document.documentElement.style.removeProperty(v);
     const val = getComputedStyle(document.documentElement).getPropertyValue(v).trim() || '#000000';
     document.getElementById(pickerIds[i]).value = val;
-    // Re-apply the inline style if it existed
     if (originalValue) {
         document.documentElement.style.setProperty(v, originalValue);
     }
