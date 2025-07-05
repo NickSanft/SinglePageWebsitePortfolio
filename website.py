@@ -21,7 +21,6 @@ def load_data():
             "hero_subtitle": "Software Developer | Python & JavaScript Enthusiast",
             "hero_image_url": "https://placehold.co/256x256/e0e0e0/333333?text=You",
             "about_me": "Hello! I'm a software developer with a passion for building clean and efficient solutions. I specialize in web development and enjoy working with Python, JavaScript, and modern front-end frameworks. My goal is to create impactful and user-friendly applications.",
-            # --- NEW: Configurable Theme Colors ---
             "theme_colors": {
                 "light": {
                     "background": "#f9fafb",
@@ -145,6 +144,7 @@ template = """
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ website_title }}</title>
     <script src="/static/tailwindcss.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <link rel="stylesheet" href="/static/fontawesome-free-6.4.0-web/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <script>
@@ -158,6 +158,9 @@ template = """
                 },
             },
         }
+
+        // --- NEW: Store the default section order on page load ---
+        let defaultSectionOrder = [];
 
         // Function to toggle theme and save preference to localStorage
         function toggleTheme() {
@@ -227,9 +230,10 @@ template = """
 
             document.querySelectorAll('.fade-in-section').forEach(element => { observer.observe(element); });
             document.getElementById('back-to-top-btn').addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+            initSectionReordering();
         });
     </script>
-    <!-- === NEW: Dynamic CSS Variables for Theming === -->
     <style>
         :root {
             --color-background: {{ theme_colors.light.background }};
@@ -269,16 +273,22 @@ template = """
         .stagger-item { opacity: 0; transform: translateY(20px); transition: opacity 0.5s cubic-bezier(0.5, 0, 0, 1.5), transform 0.5s cubic-bezier(0.5, 0, 0, 1.5); }
         .stagger-item.is-visible { opacity: 1; transform: translateY(0); }
         @media (prefers-reduced-motion: reduce) { .fade-in-section, .stagger-item, #back-to-top-btn { transition: none !important; transform: none !important; opacity: 1 !important; } }
-        
+
         #fontFamilySelect {
           color: black;
           background-color: white;
         }
-        
-        /* Dark mode styles */
+
         .dark #fontFamilySelect {
-          color: white; /* light text */
-          background-color: #2d2d2d; /* dark background for contrast */
+          color: white;
+          background-color: #2d2d2d;
+        }
+        .sortable-ghost {
+            opacity: 0.4;
+            background-color: var(--color-accent);
+        }
+        .sortable-chosen {
+            cursor: grabbing;
         }
     </style>
 </head>
@@ -305,7 +315,7 @@ template = """
         </div>
     </nav>
 
-    <main class="container mx-auto px-4">
+    <main id="main-content" class="container mx-auto px-4">
         <section id="about" class="py-20 md:py-32 fade-in-section">
             <div class="max-w-6xl mx-auto flex flex-col-reverse md:flex-row items-center justify-center gap-10 md:gap-16">
                 <div class="text-center md:text-left stagger-item">
@@ -413,183 +423,147 @@ template = """
                 </div>
             </div>
         </section>
-<!-- === Enhanced Play Controls Combined with Theme Editor === -->
-<section id="play" class="py-20 fade-in-section">
-  <div class="max-w-4xl mx-auto text-center">
-    <h2 class="text-4xl font-bold mb-8">Play with this website!</h2>
-    <p class="mb-4 text-[var(--color-text-secondary)]">Choose your own theme colors below and see the changes in real-time. Your changes will apply separately for light and dark mode and be saved locally.</p>
 
-    <div class="mb-8">
-      <button onclick="setMode('light')" class="px-4 py-2 rounded bg-gray-300 text-black dark:bg-gray-600 dark:text-white hover:bg-gray-400 dark:hover:bg-gray-500 mr-2">Edit Light Theme</button>
-      <button onclick="setMode('dark')" class="px-4 py-2 rounded bg-gray-800 text-white hover:bg-gray-700 mr-2">Edit Dark Theme</button>
-      <button onclick="resetAllCustomizations()" class="px-4 py-2 rounded bg-red-500 text-white hover:bg-red-600">Reset to Default</button>
-    </div>
+        <!-- === UPDATED: Moved Play Section and added logic for no-reload reset === -->
+        <section id="play" class="py-20 fade-in-section">
+          <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-4xl font-bold mb-8">Play with this website!</h2>
+            <div class="grid md:grid-cols-2 gap-12 text-left">
+                <div>
+                    <h3 class="text-2xl font-semibold mb-4 text-center md:text-left">Customize Theme</h3>
+                    <p class="mb-4 text-[var(--color-text-secondary)]">Choose your own theme colors below. Your changes will apply separately for light and dark mode and be saved locally.</p>
+                    <div class="mb-6">
+                      <button onclick="setMode('light')" class="px-4 py-2 rounded bg-gray-300 text-black dark:bg-gray-600 dark:text-white hover:bg-gray-400 dark:hover:bg-gray-500 mr-2">Edit Light Theme</button>
+                      <button onclick="setMode('dark')" class="px-4 py-2 rounded bg-gray-800 text-white hover:bg-gray-700 mr-2">Edit Dark Theme</button>
+                    </div>
+                    <div class="grid sm:grid-cols-2 gap-6">
+                      <div>
+                        <label class="block mb-2 font-semibold" for="backgroundColorPicker">Background</label>
+                        <input type="color" id="backgroundColorPicker" class="w-full h-10 cursor-pointer" oninput="updateColor('--color-background', this.value)">
+                      </div>
+                      <div>
+                        <label class="block mb-2 font-semibold" for="textPrimaryColorPicker">Primary Text</label>
+                        <input type="color" id="textPrimaryColorPicker" class="w-full h-10 cursor-pointer" oninput="updateColor('--color-text-primary', this.value)">
+                      </div>
+                      <div>
+                        <label class="block mb-2 font-semibold" for="textSecondaryColorPicker">Secondary Text</label>
+                        <input type="color" id="textSecondaryColorPicker" class="w-full h-10 cursor-pointer" oninput="updateColor('--color-text-secondary', this.value)">
+                      </div>
+                      <div>
+                        <label class="block mb-2 font-semibold" for="cardBackgroundColorPicker">Card Background</label>
+                        <input type="color" id="cardBackgroundColorPicker" class="w-full h-10 cursor-pointer" oninput="updateColor('--color-card-background', this.value)">
+                      </div>
+                      <div>
+                        <label class="block mb-2 font-semibold" for="accentColorPicker">Accent</label>
+                        <input type="color" id="accentColorPicker" class="w-full h-10 cursor-pointer" oninput="updateColor('--color-accent', this.value)">
+                      </div>
+                      <div>
+                        <label class="block mb-2 font-semibold" for="accentHoverColorPicker">Accent Hover</label>
+                        <input type="color" id="accentHoverColorPicker" class="w-full h-10 cursor-pointer" oninput="updateColor('--color-accent-hover', this.value)">
+                      </div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-semibold mb-4 text-center md:text-left">Arrange Sections</h3>
+                    <p class="mb-4 text-[var(--color-text-secondary)]">Drag and drop the sections below to reorder the page layout.</p>
+                    <ol id="section-sorter" class="space-y-2">
+                        <li data-section-id="experience" class="p-3 rounded-lg shadow-md cursor-grab bg-gray-100 dark:bg-gray-800 text-[var(--color-text-primary)] flex items-center"><i class="fas fa-grip-vertical mr-3 text-gray-400"></i>Experience</li>
+                        <li data-section-id="skills" class="p-3 rounded-lg shadow-md cursor-grab bg-gray-100 dark:bg-gray-800 text-[var(--color-text-primary)] flex items-center"><i class="fas fa-grip-vertical mr-3 text-gray-400"></i>Skills</li>
+                        <li data-section-id="projects" class="p-3 rounded-lg shadow-md cursor-grab bg-gray-100 dark:bg-gray-800 text-[var(--color-text-primary)] flex items-center"><i class="fas fa-grip-vertical mr-3 text-gray-400"></i>Projects</li>
+                        <li data-section-id="play" class="p-3 rounded-lg shadow-md cursor-grab bg-gray-100 dark:bg-gray-800 text-[var(--color-text-primary)] flex items-center"><i class="fas fa-grip-vertical mr-3 text-gray-400"></i>Play Section</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="mt-12">
+                <button onclick="resetAllCustomizations()" class="px-6 py-3 rounded-lg bg-red-500 text-white hover:bg-red-600 font-semibold">Reset All Customizations</button>
+            </div>
+          </div>
+        </section>
+    </main>
 
-    <div class="grid sm:grid-cols-2 gap-6 text-left">
-      <div>
-        <label class="block mb-2 font-semibold" for="backgroundColorPicker">Background Color</label>
-        <input type="color" id="backgroundColorPicker" class="w-full h-10 cursor-pointer" 
-               oninput="updateColor('--color-background', this.value)">
-      </div>
-      <div>
-        <label class="block mb-2 font-semibold" for="textPrimaryColorPicker">Primary Text Color</label>
-        <input type="color" id="textPrimaryColorPicker" class="w-full h-10 cursor-pointer" 
-               oninput="updateColor('--color-text-primary', this.value)">
-      </div>
-      <div>
-        <label class="block mb-2 font-semibold" for="textSecondaryColorPicker">Secondary Text Color</label>
-        <input type="color" id="textSecondaryColorPicker" class="w-full h-10 cursor-pointer" 
-               oninput="updateColor('--color-text-secondary', this.value)">
-      </div>
-      <div>
-        <label class="block mb-2 font-semibold" for="cardBackgroundColorPicker">Card Background Color</label>
-        <input type="color" id="cardBackgroundColorPicker" class="w-full h-10 cursor-pointer" 
-               oninput="updateColor('--color-card-background', this.value)">
-      </div>
-      <div>
-        <label class="block mb-2 font-semibold" for="accentColorPicker">Accent Color</label>
-        <input type="color" id="accentColorPicker" class="w-full h-10 cursor-pointer" 
-               oninput="updateColor('--color-accent', this.value)">
-      </div>
-      <div>
-        <label class="block mb-2 font-semibold" for="accentHoverColorPicker">Accent Hover Color</label>
-        <input type="color" id="accentHoverColorPicker" class="w-full h-10 cursor-pointer" 
-               oninput="updateColor('--color-accent-hover', this.value)">
-      </div>
-    </div>
-
-    <!-- Enhanced Play Controls -->
-    <div class="grid sm:grid-cols-2 gap-6 text-left mt-12">
-      <div>
-        <label class="block mb-2 font-semibold" for="fontSizeSlider">Font Size Scale</label>
-        <input type="range" id="fontSizeSlider" min="0.8" max="1.5" step="0.05" value="1" onchange="saveFontSize(this.value)" class="w-full">
-      </div>
-      <div>
-        <label class="block mb-2 font-semibold" for="fontFamilySelect">Font Family</label>
-        <select id="fontFamilySelect" class="w-full h-10" onchange="saveFontFamily(this.value)">
-          <option value="'Inter', sans-serif">Inter</option>
-          <option value="'Segoe UI', sans-serif">Segoe UI</option>
-          <option value="'Courier New', monospace">Courier New</option>
-          <option value="'Times New Roman', serif">Times New Roman</option>
-        </select>
-      </div>
-      <div class="flex items-center space-x-2">
-        <input type="checkbox" id="grayscaleToggle" onchange="toggleGrayscale(this.checked)">
-        <label for="grayscaleToggle" class="font-semibold">Enable Grayscale</label>
-      </div>
-    </div>
-  </div>
-</section>
-
-<style>
-  :root {
-    --font-size-scale: 1;
-    --font-family-custom: 'Inter', sans-serif;
-    --grayscale: none;
-  }
-  html, body {
-    font-size: calc(16px * var(--font-size-scale));
-    font-family: var(--font-family-custom);
-    filter: var(--grayscale);
-  }
-
-  /* Fix font family dropdown text color on dark mode */
-  #fontFamilySelect {
-    color: black;
-    background-color: white;
-  }
-  .dark #fontFamilySelect {
-    color: white;
-    background-color: #2d2d2d;
-  }
-</style>
+    <footer id="contact" class="py-20 bg-gray-100 dark:bg-gray-800 fade-in-section">
+        <div class="max-w-4xl mx-auto px-4 text-center">
+            <h2 class="text-3xl font-bold mb-4">Contact</h2>
+            <p class="mb-6 text-[var(--color-text-secondary)]">Feel free to connect with me!</p>
+            <div class="flex justify-center space-x-6">
+                <a href="{{ contact_info.github_url }}" aria-label="GitHub" class="text-[var(--color-text-primary)] hover:text-[var(--color-accent)] transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded-full"><i class="fab fa-github fa-2x"></i></a>
+                <a href="{{ contact_info.linkedin_url }}" aria-label="LinkedIn" class="text-[var(--color-text-primary)] hover:text-[var(--color-accent)] transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded-full"><i class="fab fa-linkedin fa-2x"></i></a>
+                <a href="{{ contact_info.bandcamp_url }}" aria-label="Bandcamp" class="text-[var(--color-text-primary)] hover:text-[var(--color-accent)] transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded-full"><i class="fab fa-bandcamp fa-2x"></i></a>
+                <a href="{{ contact_info.kofi_url }}" aria-label="Ko-fi" class="text-[var(--color-text-primary)] hover:text-[var(--color-accent)] transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded-full"><i class="fas fa-coffee fa-2x"></i></a>
+            </div>
+            <p class="mt-8 text-sm text-gray-500 dark:text-gray-400">&copy; {{ copyright_string }} {{ copyright_name }}</p>
+        </div>
+    </footer>
 
 <script>
-function saveFontSize(size) {
-  document.documentElement.style.setProperty('--font-size-scale', size);
-  localStorage.setItem('fontSize', size);
+function initSectionReordering() {
+    const sorter = document.getElementById('section-sorter');
+    const mainContent = document.getElementById('main-content');
+
+    // Store the default order on initial load
+    defaultSectionOrder = Array.from(sorter.children).map(item => item.dataset.sectionId);
+
+    // Apply saved order on load
+    const savedOrder = JSON.parse(localStorage.getItem('sectionOrder'));
+    if (savedOrder) {
+        applySectionOrder(savedOrder);
+    }
+
+    Sortable.create(sorter, {
+        animation: 150,
+        ghostClass: 'sortable-ghost',
+        chosenClass: 'sortable-chosen',
+        onEnd: function (evt) {
+            const newOrder = Array.from(sorter.children).map(item => item.dataset.sectionId);
+            saveSectionOrder(newOrder);
+            applySectionOrder(newOrder);
+        },
+    });
 }
 
-function applySavedFontSize() {
-  const size = localStorage.getItem('fontSize');
-  if (size) {
-    document.documentElement.style.setProperty('--font-size-scale', size);
-    document.getElementById('fontSizeSlider').value = size;
-  }
+function saveSectionOrder(order) {
+    localStorage.setItem('sectionOrder', JSON.stringify(order));
 }
 
-function saveFontFamily(family) {
-  document.documentElement.style.setProperty('--font-family-custom', family);
-  localStorage.setItem('fontFamily', family);
+function applySectionOrder(order) {
+    const mainContent = document.getElementById('main-content');
+    const sorter = document.getElementById('section-sorter');
+
+    order.forEach(sectionId => {
+        const sectionElement = document.getElementById(sectionId);
+        if (sectionElement) {
+            mainContent.appendChild(sectionElement);
+        }
+    });
+
+    order.forEach(sectionId => {
+        const listItem = sorter.querySelector(`[data-section-id="${sectionId}"]`);
+        if (listItem) {
+            sorter.appendChild(listItem);
+        }
+    });
 }
 
-function applySavedFontFamily() {
-  const family = localStorage.getItem('fontFamily');
-  if (family) {
-    document.documentElement.style.setProperty('--font-family-custom', family);
-    document.getElementById('fontFamilySelect').value = family;
-  }
-}
-
-function toggleGrayscale(enable) {
-  document.documentElement.style.setProperty('--grayscale', enable ? 'grayscale(100%)' : 'none');
-  localStorage.setItem('grayscale', enable);
-  document.getElementById('grayscaleToggle').checked = enable;
-}
-
-function applySavedGrayscale() {
-  const gs = localStorage.getItem('grayscale');
-  const enabled = gs === 'true';
-  document.documentElement.style.setProperty('--grayscale', enabled ? 'grayscale(100%)' : 'none');
-  document.getElementById('grayscaleToggle').checked = enabled;
-}
-
+// --- UPDATED: Reset function no longer reloads the page ---
 function resetAllCustomizations() {
+  // 1. Clear all customizations from localStorage
   localStorage.removeItem('customColors');
-  localStorage.removeItem('fontSize');
-  localStorage.removeItem('fontFamily');
-  localStorage.removeItem('grayscale');
   localStorage.removeItem('theme');
+  localStorage.removeItem('sectionOrder');
 
-  // Remove custom CSS vars
-  const cssVars = [
-    '--color-background',
-    '--color-text-primary',
-    '--color-text-secondary',
-    '--color-card-background',
-    '--color-accent',
-    '--color-accent-hover'
+  // 2. Reset Theme without reloading
+  // Remove all inline style properties to revert to stylesheet defaults
+  const colorVars = [
+    '--color-background', '--color-text-primary', '--color-text-secondary',
+    '--color-card-background', '--color-accent', '--color-accent-hover'
   ];
-  cssVars.forEach(v => document.documentElement.style.removeProperty(v));
+  colorVars.forEach(v => document.documentElement.style.removeProperty(v));
 
-  // Reset font and grayscale defaults
-  document.documentElement.style.setProperty('--font-size-scale', '1');
-  document.documentElement.style.setProperty('--font-family-custom', "'Inter', sans-serif");
-  document.documentElement.style.setProperty('--grayscale', 'none');
+  // Set back to default light theme and update color pickers to match
+  setMode('light');
 
-  // Reset dark mode to light
-  document.documentElement.classList.remove('dark');
-
-  // Reset UI controls
-  document.getElementById('fontSizeSlider').value = 1;
-  document.getElementById('fontFamilySelect').value = "'Inter', sans-serif";
-  document.getElementById('grayscaleToggle').checked = false;
-
-  // Reset color pickers to computed styles or fallback black
-  [
-    'backgroundColorPicker',
-    'textPrimaryColorPicker',
-    'textSecondaryColorPicker',
-    'cardBackgroundColorPicker',
-    'accentColorPicker',
-    'accentHoverColorPicker'
-  ].forEach(id => {
-    const cssVar = idToCssVar(id);
-    const val = getComputedStyle(document.documentElement).getPropertyValue(cssVar).trim() || '#000000';
-    document.getElementById(id).value = val;
-  });
-
-  updatePickers();
+  // 3. Reset Section Order without reloading
+  applySectionOrder(defaultSectionOrder);
 }
 
 function idToCssVar(id) {
@@ -645,8 +619,15 @@ function updatePickers() {
     'accentHoverColorPicker'
   ];
   colorVars.forEach((v, i) => {
+    // Temporarily remove inline style to get the default from the stylesheet
+    const originalValue = document.documentElement.style.getPropertyValue(v);
+    document.documentElement.style.removeProperty(v);
     const val = getComputedStyle(document.documentElement).getPropertyValue(v).trim() || '#000000';
     document.getElementById(pickerIds[i]).value = val;
+    // Re-apply the inline style if it existed
+    if (originalValue) {
+        document.documentElement.style.setProperty(v, originalValue);
+    }
   });
 }
 
@@ -668,27 +649,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
   applySavedThemeColors();
   updatePickers();
-  applySavedFontSize();
-  applySavedFontFamily();
-  applySavedGrayscale();
 });
 </script>
-
-    </main>
-
-    <footer id="contact" class="py-20 bg-gray-100 dark:bg-gray-800 fade-in-section">
-        <div class="max-w-4xl mx-auto px-4 text-center">
-            <h2 class="text-3xl font-bold mb-4">Contact</h2>
-            <p class="mb-6 text-[var(--color-text-secondary)]">Feel free to connect with me!</p>
-            <div class="flex justify-center space-x-6">
-                <a href="{{ contact_info.github_url }}" aria-label="GitHub" class="text-[var(--color-text-primary)] hover:text-[var(--color-accent)] transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded-full"><i class="fab fa-github fa-2x"></i></a>
-                <a href="{{ contact_info.linkedin_url }}" aria-label="LinkedIn" class="text-[var(--color-text-primary)] hover:text-[var(--color-accent)] transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded-full"><i class="fab fa-linkedin fa-2x"></i></a>
-                <a href="{{ contact_info.bandcamp_url }}" aria-label="Bandcamp" class="text-[var(--color-text-primary)] hover:text-[var(--color-accent)] transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded-full"><i class="fab fa-bandcamp fa-2x"></i></a>
-                <a href="{{ contact_info.kofi_url }}" aria-label="Ko-fi" class="text-[var(--color-text-primary)] hover:text-[var(--color-accent)] transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded-full"><i class="fas fa-coffee fa-2x"></i></a>
-            </div>
-            <p class="mt-8 text-sm text-gray-500 dark:text-gray-400">&copy; {{ copyright_string }} {{ copyright_name }}</p>
-        </div>
-    </footer>
 
     <button id="back-to-top-btn" title="Go to top">
         <i class="fas fa-arrow-up"></i>
@@ -755,7 +717,6 @@ def write_static_html():
     data = load_data()
     # For the dev server, use absolute paths
     server_template = template
-    rendered_for_server = render_template_string(server_template, **data)
 
     # For the static file, use relative paths
     file_template = template.replace('src="/static/', 'src="static/').replace('href="/static/', 'href="static/')
