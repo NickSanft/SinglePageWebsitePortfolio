@@ -617,7 +617,7 @@ function resetAllCustomizations() {
   ];
   colorVars.forEach(v => document.documentElement.style.removeProperty(v));
 
-  setMode('light');
+  setMode('dark');
   applySectionOrder(defaultSectionOrder);
 
   // Add flash effect for visual feedback
