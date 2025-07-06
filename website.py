@@ -146,14 +146,19 @@ template = """
     <script src="/static/tailwindcss.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <link rel="stylesheet" href="/static/fontawesome-free-6.4.0-web/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- === NEW: Added Poppins font for headings === -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: {
-                        inter: ['Inter', 'sans-serif'],
+                        // === NEW: Defined separate fonts for body and headings ===
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Poppins', 'sans-serif'],
                     },
                     keyframes: {
                         flash: {
@@ -298,11 +303,31 @@ template = """
             outline: 2px solid var(--color-accent);
             outline-offset: 2px;
         }
+        /* === NEW: Animated Underline for Nav Links === */
+        .nav-link {
+            position: relative;
+            text-decoration: none;
+            padding-bottom: 4px;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: var(--color-accent);
+            transform: scaleX(0);
+            transform-origin: center;
+            transition: transform 0.3s ease-out;
+        }
+        .nav-link:hover::after {
+            transform: scaleX(1);
+        }
     </style>
 </head>
-<body class="bg-[var(--color-background)] text-[var(--color-text-primary)]">
+<body class="bg-[var(--color-background)] text-[var(--color-text-primary)] font-sans">
 
-    <!-- === NEW: Skip to Main Content Link for Accessibility === -->
     <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-4 focus:left-4 focus:px-4 focus:py-2 focus:bg-[var(--color-card-background)] focus:text-[var(--color-text-primary)] focus:rounded-lg">
       Skip to main content
     </a>
@@ -311,14 +336,14 @@ template = """
 
     <nav class="sticky top-0 shadow-md z-40 transition-colors duration-300 bg-[var(--color-card-background)]">
         <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <a href="#" class="text-2xl font-bold text-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded">{{ portfolio_name }}</a>
+            <a href="#" class="text-2xl font-bold font-heading text-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded">{{ portfolio_name }}</a>
             <div class="flex items-center space-x-4">
-                <div class="hidden sm:flex space-x-6 text-[var(--color-text-primary)]">
-                    <a href="#about" class="hover:text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded">About</a>
-                    <a href="#experience" class="hover:text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded">Experience</a>
-                    <a href="#skills" class="hover:text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded">Skills</a>
-                    <a href="#projects" class="hover:text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded">Projects</a>
-                    <a href="#contact" class="hover:text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded">Contact</a>
+                <div class="hidden sm:flex space-x-8 text-[var(--color-text-primary)]">
+                    <a href="#about" class="nav-link hover:text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded">About</a>
+                    <a href="#experience" class="nav-link hover:text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded">Experience</a>
+                    <a href="#skills" class="nav-link hover:text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded">Skills</a>
+                    <a href="#projects" class="nav-link hover:text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded">Projects</a>
+                    <a href="#contact" class="nav-link hover:text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded">Contact</a>
                 </div>
                 <button onclick="toggleTheme()" aria-label="Toggle Theme" class="px-3 py-2 rounded-md shadow transition-colors duration-300 bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2">
                     <i class="fas fa-moon hidden dark:inline"></i>
@@ -329,11 +354,12 @@ template = """
     </nav>
 
     <main id="main-content" class="container mx-auto px-4">
-        <section id="about" class="py-20 md:py-32 fade-in-section">
+        <!-- === UPDATED: Increased vertical padding for more whitespace === -->
+        <section id="about" class="py-24 md:py-32 fade-in-section">
             <div class="max-w-6xl mx-auto flex flex-col-reverse md:flex-row items-center justify-center gap-10 md:gap-16">
                 <div class="text-center md:text-left stagger-item">
-                    <h1 class="text-4xl md:text-6xl font-bold mb-2 text-[var(--color-text-primary)]">{{ hero_title }}</h1>
-                    <p class="text-xl md:text-2xl text-[var(--color-accent)] font-semibold mb-4">{{ hero_subtitle }}</p>
+                    <h1 class="font-heading text-4xl md:text-6xl font-bold mb-2 text-[var(--color-text-primary)]">{{ hero_title }}</h1>
+                    <p class="font-heading text-xl md:text-2xl text-[var(--color-accent)] font-semibold mb-4">{{ hero_subtitle }}</p>
                     <p class="text-lg text-[var(--color-text-secondary)] max-w-2xl">{{ about_me }}</p>
                 </div>
                 <div class="flex-shrink-0 stagger-item">
@@ -342,13 +368,14 @@ template = """
             </div>
         </section>
 
-        <section id="experience" class="py-20 fade-in-section">
+        <section id="experience" class="py-24 fade-in-section">
             <div class="max-w-4xl mx-auto">
-                <h2 class="text-4xl font-bold mb-8 text-center">Work Experience</h2>
+                <h2 class="font-heading text-4xl font-bold mb-12 text-center">Work Experience</h2>
                 <ul class="space-y-8">
                     {% for company_group in grouped_experience %}
-                    <li class="interactive-card p-6 rounded-lg shadow-lg stagger-item">
-                        <h3 class="text-2xl font-bold mb-4 text-[var(--color-text-primary)]">{{ company_group.company }}</h3>
+                    <!-- === UPDATED: Added card lift effect on hover === -->
+                    <li class="interactive-card p-6 rounded-lg shadow-lg stagger-item transform hover:-translate-y-2 transition-transform duration-300">
+                        <h3 class="font-heading text-2xl font-bold mb-4 text-[var(--color-text-primary)]">{{ company_group.company }}</h3>
                         <ul class="space-y-4 pl-5 border-l-2 border-[var(--color-accent)]">
                             {% for job in company_group.roles %}
                             <li class="stagger-item">
@@ -364,9 +391,9 @@ template = """
             </div>
         </section>
 
-        <section id="skills" class="py-20 fade-in-section">
+        <section id="skills" class="py-24 fade-in-section">
             <div class="max-w-4xl mx-auto text-center">
-                <h2 class="text-4xl font-bold mb-8">Skills</h2>
+                <h2 class="font-heading text-4xl font-bold mb-12">Skills</h2>
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
                     {% for skill in skills %}
                     <div class="stagger-item flex flex-col items-center justify-center p-4 rounded-lg shadow-md bg-gray-100 dark:bg-gray-800 text-[var(--color-text-primary)] transform hover:scale-105 transition-transform duration-300">
@@ -378,9 +405,9 @@ template = """
             </div>
         </section>
 
-        <section id="projects" class="py-20 fade-in-section">
+        <section id="projects" class="py-24 fade-in-section">
             <div class="max-w-5xl mx-auto">
-                <h2 class="text-4xl font-bold mb-12 text-center">Projects</h2>
+                <h2 class="font-heading text-4xl font-bold mb-12 text-center">Projects</h2>
 
                 {% if featured_project %}
                 <div class="mb-16 stagger-item">
@@ -390,7 +417,7 @@ template = """
                         </div>
                         <div class="p-8 md:w-1/2 flex flex-col justify-center">
                             <div>
-                                <h3 class="text-2xl font-bold mb-2">
+                                <h3 class="font-heading text-2xl font-bold mb-2">
                                     <i class="{{ featured_project.icon }} text-[var(--color-accent)] mr-2"></i>
                                     {{ featured_project.title }}
                                 </h3>
@@ -415,7 +442,7 @@ template = """
                     {% for project in other_projects %}
                     <div class="interactive-card p-6 rounded-lg shadow-lg stagger-item flex flex-col transform hover:-translate-y-1 transition-transform duration-300">
                         <div class="flex-grow">
-                            <h3 class="text-2xl font-bold mb-2">
+                            <h3 class="font-heading text-2xl font-bold mb-2">
                                 <i class="{{ project.icon }} text-[var(--color-accent)] mr-2"></i>
                                 {{ project.title }}
                             </h3>
@@ -437,12 +464,12 @@ template = """
             </div>
         </section>
 
-        <section id="play" class="py-20 fade-in-section">
+        <section id="play" class="py-24 fade-in-section">
           <div id="play-controls" class="max-w-4xl mx-auto text-center">
-            <h2 class="text-4xl font-bold mb-8">Play with this website!</h2>
+            <h2 class="font-heading text-4xl font-bold mb-8">Play with this website!</h2>
             <div class="grid md:grid-cols-2 gap-12 text-left">
                 <div>
-                    <h3 class="text-2xl font-semibold mb-4 text-center md:text-left">Customize Theme</h3>
+                    <h3 class="font-heading text-2xl font-semibold mb-4 text-center md:text-left">Customize Theme</h3>
                     <p class="mb-4 text-[var(--color-text-secondary)]">Choose your own theme colors below. Your changes will apply separately for light and dark mode and be saved locally.</p>
                     <div class="mb-6">
                       <button onclick="setMode('light')" class="px-4 py-2 rounded bg-gray-300 text-black dark:bg-gray-600 dark:text-white hover:bg-gray-400 dark:hover:bg-gray-500 mr-2">Edit Light Theme</button>
@@ -476,7 +503,7 @@ template = """
                     </div>
                 </div>
                 <div>
-                    <h3 class="text-2xl font-semibold mb-4 text-center md:text-left">Arrange Sections</h3>
+                    <h3 class="font-heading text-2xl font-semibold mb-4 text-center md:text-left">Arrange Sections</h3>
                     <p class="mb-4 text-[var(--color-text-secondary)]">Drag and drop the sections below, or use your keyboard (Enter/Space to grab, Arrows to move, Esc to drop).</p>
                     <ol id="section-sorter" class="space-y-2">
                         <li data-section-id="experience" tabindex="0" aria-roledescription="Draggable section" aria-grabbed="false" class="p-3 rounded-lg shadow-md cursor-grab bg-gray-100 dark:bg-gray-800 text-[var(--color-text-primary)] flex items-center focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"><i class="fas fa-grip-vertical mr-3 text-gray-400"></i>Experience</li>
@@ -493,9 +520,9 @@ template = """
         </section>
     </main>
 
-    <footer id="contact" class="py-20 bg-gray-100 dark:bg-gray-800 fade-in-section">
+    <footer id="contact" class="py-24 bg-gray-100 dark:bg-gray-800 fade-in-section">
         <div class="max-w-4xl mx-auto px-4 text-center">
-            <h2 class="text-3xl font-bold mb-4">Contact</h2>
+            <h2 class="font-heading text-3xl font-bold mb-4">Contact</h2>
             <p class="mb-6 text-[var(--color-text-secondary)]">Feel free to connect with me!</p>
             <div class="flex justify-center space-x-6">
                 <a href="{{ contact_info.github_url }}" aria-label="GitHub" class="text-[var(--color-text-primary)] hover:text-[var(--color-accent)] transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded-full"><i class="fab fa-github fa-2x"></i></a>
