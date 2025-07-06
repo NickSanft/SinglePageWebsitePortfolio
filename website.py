@@ -135,7 +135,7 @@ def load_data():
     return data
 
 
-# Tailwind CSS with Dark Mode and theme toggle logic + interactive card spotlight effect
+# === UPDATED: Template refactored with Jinja2 Macros for readability and maintainability ===
 template = """
 <!DOCTYPE html>
 <html lang="en">
@@ -146,7 +146,6 @@ template = """
     <script src="/static/tailwindcss.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <link rel="stylesheet" href="/static/fontawesome-free-6.4.0-web/css/all.min.css">
-    <!-- === NEW: Added Poppins font for headings === -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
@@ -156,7 +155,6 @@ template = """
             theme: {
                 extend: {
                     fontFamily: {
-                        // === NEW: Defined separate fonts for body and headings ===
                         sans: ['Inter', 'sans-serif'],
                         heading: ['Poppins', 'sans-serif'],
                     },
@@ -303,7 +301,6 @@ template = """
             outline: 2px solid var(--color-accent);
             outline-offset: 2px;
         }
-        /* === NEW: Animated Underline for Nav Links === */
         .nav-link {
             position: relative;
             text-decoration: none;
@@ -328,6 +325,92 @@ template = """
 </head>
 <body class="bg-[var(--color-background)] text-[var(--color-text-primary)] font-sans">
 
+{# === MACRO DEFINITIONS === #}
+
+{% macro nav_link(href, text) %}
+    <a href="{{ href }}" class="nav-link hover:text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded">{{ text }}</a>
+{% endmacro %}
+
+{% macro skill_item(skill) %}
+    <div class="stagger-item flex flex-col items-center justify-center p-4 rounded-lg shadow-md bg-gray-100 dark:bg-gray-800 text-[var(--color-text-primary)] transform hover:scale-105 transition-transform duration-300">
+        <i class="{{ skill.icon }} text-4xl mb-2 text-[var(--color-accent)]"></i>
+        <span>{{ skill.name }}</span>
+    </div>
+{% endmacro %}
+
+{% macro project_card(project, is_featured=false) %}
+    {% if is_featured %}
+        <div class="mb-16 stagger-item">
+            <div class="interactive-card rounded-lg shadow-xl overflow-hidden md:flex transform hover:-translate-y-2 transition-transform duration-300">
+                <div class="md:w-1/2 bg-gray-200 dark:bg-gray-700">
+                    <img src="{{ project.image_url }}" alt="{{ project.title }} screenshot" class="object-cover w-full h-full min-h-[250px]">
+                </div>
+                <div class="p-8 md:w-1/2 flex flex-col justify-center">
+                    <div>
+                        <h3 class="font-heading text-2xl font-bold mb-2">
+                            <i class="{{ project.icon }} text-[var(--color-accent)] mr-2"></i>
+                            {{ project.title }}
+                        </h3>
+                        <p class="text-[var(--color-text-secondary)] mb-4">{{ project.description }}</p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            {% for tech in project.tech_stack %}
+                            <span class="bg-blue-100 text-blue-800 text-sm font-semibold px-3 py-1 rounded-full dark:bg-blue-900 dark:text-blue-200">{{ tech }}</span>
+                            {% endfor %}
+                        </div>
+                        {% if project.url %}
+                        <a href="{{ project.url }}" target="_blank" rel="noopener noreferrer" class="inline-block mt-2 font-semibold text-[var(--color-accent)] hover:underline">
+                            View Project <i class="fas fa-external-link-alt ml-1 text-xs"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="interactive-card p-6 rounded-lg shadow-lg stagger-item flex flex-col transform hover:-translate-y-1 transition-transform duration-300">
+            <div class="flex-grow">
+                <h3 class="font-heading text-2xl font-bold mb-2">
+                    <i class="{{ project.icon }} text-[var(--color-accent)] mr-2"></i>
+                    {{ project.title }}
+                </h3>
+                <p class="text-[var(--color-text-secondary)] mb-4">{{ project.description }}</p>
+                <div class="flex flex-wrap gap-2 mb-4">
+                    {% for tech in project.tech_stack %}
+                    <span class="bg-gray-200 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-gray-700 dark:text-gray-300">{{ tech }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% if project.url %}
+            <a href="{{ project.url }}" target="_blank" rel="noopener noreferrer" class="font-semibold text-[var(--color-accent)] hover:underline self-start">
+                View Project <i class="fas fa-external-link-alt ml-1 text-xs"></i>
+            </a>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endmacro %}
+
+{% macro experience_group(group) %}
+    <li class="interactive-card p-6 rounded-lg shadow-lg stagger-item transform hover:-translate-y-2 transition-transform duration-300">
+        <h3 class="font-heading text-2xl font-bold mb-4 text-[var(--color-text-primary)]">{{ group.company }}</h3>
+        <ul class="space-y-4 pl-5 border-l-2 border-[var(--color-accent)]">
+            {% for job in group.roles %}
+            <li class="stagger-item">
+                <strong class="text-xl text-[var(--color-text-primary)]">{{ job.role }}</strong>
+                <span class="block text-sm text-gray-500 dark:text-gray-400">{{ job.period }}</span>
+                <p class="mt-1 text-[var(--color-text-secondary)]">{{ job.details }}</p>
+            </li>
+            {% endfor %}
+        </ul>
+    </li>
+{% endmacro %}
+
+{% macro social_link(url, label, icon_class) %}
+    <a href="{{ url }}" aria-label="{{ label }}" class="text-[var(--color-text-primary)] hover:text-[var(--color-accent)] transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded-full"><i class="{{ icon_class }} fa-2x"></i></a>
+{% endmacro %}
+
+
+{# === MAIN DOCUMENT STRUCTURE === #}
+
     <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-4 focus:left-4 focus:px-4 focus:py-2 focus:bg-[var(--color-card-background)] focus:text-[var(--color-text-primary)] focus:rounded-lg">
       Skip to main content
     </a>
@@ -339,11 +422,11 @@ template = """
             <a href="#" class="text-2xl font-bold font-heading text-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded">{{ portfolio_name }}</a>
             <div class="flex items-center space-x-4">
                 <div class="hidden sm:flex space-x-8 text-[var(--color-text-primary)]">
-                    <a href="#about" class="nav-link hover:text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded">About</a>
-                    <a href="#experience" class="nav-link hover:text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded">Experience</a>
-                    <a href="#skills" class="nav-link hover:text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded">Skills</a>
-                    <a href="#projects" class="nav-link hover:text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded">Projects</a>
-                    <a href="#contact" class="nav-link hover:text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded">Contact</a>
+                    {{ nav_link("#about", "About") }}
+                    {{ nav_link("#experience", "Experience") }}
+                    {{ nav_link("#skills", "Skills") }}
+                    {{ nav_link("#projects", "Projects") }}
+                    {{ nav_link("#contact", "Contact") }}
                 </div>
                 <button onclick="toggleTheme()" aria-label="Toggle Theme" class="px-3 py-2 rounded-md shadow transition-colors duration-300 bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2">
                     <i class="fas fa-moon hidden dark:inline"></i>
@@ -354,7 +437,6 @@ template = """
     </nav>
 
     <main id="main-content" class="container mx-auto px-4">
-        <!-- === UPDATED: Increased vertical padding for more whitespace === -->
         <section id="about" class="py-24 md:py-32 fade-in-section">
             <div class="max-w-6xl mx-auto flex flex-col-reverse md:flex-row items-center justify-center gap-10 md:gap-16">
                 <div class="text-center md:text-left stagger-item">
@@ -372,20 +454,8 @@ template = """
             <div class="max-w-4xl mx-auto">
                 <h2 class="font-heading text-4xl font-bold mb-12 text-center">Work Experience</h2>
                 <ul class="space-y-8">
-                    {% for company_group in grouped_experience %}
-                    <!-- === UPDATED: Added card lift effect on hover === -->
-                    <li class="interactive-card p-6 rounded-lg shadow-lg stagger-item transform hover:-translate-y-2 transition-transform duration-300">
-                        <h3 class="font-heading text-2xl font-bold mb-4 text-[var(--color-text-primary)]">{{ company_group.company }}</h3>
-                        <ul class="space-y-4 pl-5 border-l-2 border-[var(--color-accent)]">
-                            {% for job in company_group.roles %}
-                            <li class="stagger-item">
-                                <strong class="text-xl text-[var(--color-text-primary)]">{{ job.role }}</strong>
-                                <span class="block text-sm text-gray-500 dark:text-gray-400">{{ job.period }}</span>
-                                <p class="mt-1 text-[var(--color-text-secondary)]">{{ job.details }}</p>
-                            </li>
-                            {% endfor %}
-                        </ul>
-                    </li>
+                    {% for group in grouped_experience %}
+                        {{ experience_group(group) }}
                     {% endfor %}
                 </ul>
             </div>
@@ -396,10 +466,7 @@ template = """
                 <h2 class="font-heading text-4xl font-bold mb-12">Skills</h2>
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
                     {% for skill in skills %}
-                    <div class="stagger-item flex flex-col items-center justify-center p-4 rounded-lg shadow-md bg-gray-100 dark:bg-gray-800 text-[var(--color-text-primary)] transform hover:scale-105 transition-transform duration-300">
-                        <i class="{{ skill.icon }} text-4xl mb-2 text-[var(--color-accent)]"></i>
-                        <span>{{ skill.name }}</span>
-                    </div>
+                        {{ skill_item(skill) }}
                     {% endfor %}
                 </div>
             </div>
@@ -408,57 +475,12 @@ template = """
         <section id="projects" class="py-24 fade-in-section">
             <div class="max-w-5xl mx-auto">
                 <h2 class="font-heading text-4xl font-bold mb-12 text-center">Projects</h2>
-
                 {% if featured_project %}
-                <div class="mb-16 stagger-item">
-                    <div class="interactive-card rounded-lg shadow-xl overflow-hidden md:flex transform hover:-translate-y-2 transition-transform duration-300">
-                        <div class="md:w-1/2 bg-gray-200 dark:bg-gray-700">
-                            <img src="{{ featured_project.image_url }}" alt="{{ featured_project.title }} screenshot" class="object-cover w-full h-full min-h-[250px]">
-                        </div>
-                        <div class="p-8 md:w-1/2 flex flex-col justify-center">
-                            <div>
-                                <h3 class="font-heading text-2xl font-bold mb-2">
-                                    <i class="{{ featured_project.icon }} text-[var(--color-accent)] mr-2"></i>
-                                    {{ featured_project.title }}
-                                </h3>
-                                <p class="text-[var(--color-text-secondary)] mb-4">{{ featured_project.description }}</p>
-                                <div class="flex flex-wrap gap-2 mb-4">
-                                    {% for tech in featured_project.tech_stack %}
-                                    <span class="bg-blue-100 text-blue-800 text-sm font-semibold px-3 py-1 rounded-full dark:bg-blue-900 dark:text-blue-200">{{ tech }}</span>
-                                    {% endfor %}
-                                </div>
-                                {% if featured_project.url %}
-                                <a href="{{ featured_project.url }}" target="_blank" rel="noopener noreferrer" class="inline-block mt-2 font-semibold text-[var(--color-accent)] hover:underline">
-                                    View Project <i class="fas fa-external-link-alt ml-1 text-xs"></i>
-                                </a>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                    {{ project_card(featured_project, is_featured=true) }}
                 {% endif %}
-
                 <div class="grid md:grid-cols-2 gap-8">
                     {% for project in other_projects %}
-                    <div class="interactive-card p-6 rounded-lg shadow-lg stagger-item flex flex-col transform hover:-translate-y-1 transition-transform duration-300">
-                        <div class="flex-grow">
-                            <h3 class="font-heading text-2xl font-bold mb-2">
-                                <i class="{{ project.icon }} text-[var(--color-accent)] mr-2"></i>
-                                {{ project.title }}
-                            </h3>
-                            <p class="text-[var(--color-text-secondary)] mb-4">{{ project.description }}</p>
-                            <div class="flex flex-wrap gap-2 mb-4">
-                                {% for tech in project.tech_stack %}
-                                <span class="bg-gray-200 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-gray-700 dark:text-gray-300">{{ tech }}</span>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        {% if project.url %}
-                        <a href="{{ project.url }}" target="_blank" rel="noopener noreferrer" class="font-semibold text-[var(--color-accent)] hover:underline self-start">
-                            View Project <i class="fas fa-external-link-alt ml-1 text-xs"></i>
-                        </a>
-                        {% endif %}
-                    </div>
+                        {{ project_card(project) }}
                     {% endfor %}
                 </div>
             </div>
@@ -525,10 +547,10 @@ template = """
             <h2 class="font-heading text-3xl font-bold mb-4">Contact</h2>
             <p class="mb-6 text-[var(--color-text-secondary)]">Feel free to connect with me!</p>
             <div class="flex justify-center space-x-6">
-                <a href="{{ contact_info.github_url }}" aria-label="GitHub" class="text-[var(--color-text-primary)] hover:text-[var(--color-accent)] transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded-full"><i class="fab fa-github fa-2x"></i></a>
-                <a href="{{ contact_info.linkedin_url }}" aria-label="LinkedIn" class="text-[var(--color-text-primary)] hover:text-[var(--color-accent)] transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded-full"><i class="fab fa-linkedin fa-2x"></i></a>
-                <a href="{{ contact_info.bandcamp_url }}" aria-label="Bandcamp" class="text-[var(--color-text-primary)] hover:text-[var(--color-accent)] transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded-full"><i class="fab fa-bandcamp fa-2x"></i></a>
-                <a href="{{ contact_info.kofi_url }}" aria-label="Ko-fi" class="text-[var(--color-text-primary)] hover:text-[var(--color-accent)] transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded-full"><i class="fas fa-coffee fa-2x"></i></a>
+                {{ social_link(contact_info.github_url, "GitHub", "fab fa-github") }}
+                {{ social_link(contact_info.linkedin_url, "LinkedIn", "fab fa-linkedin") }}
+                {{ social_link(contact_info.bandcamp_url, "Bandcamp", "fab fa-bandcamp") }}
+                {{ social_link(contact_info.kofi_url, "Ko-fi", "fas fa-coffee") }}
             </div>
             <p class="mt-8 text-sm text-gray-500 dark:text-gray-400">&copy; {{ copyright_string }} {{ copyright_name }}</p>
         </div>
