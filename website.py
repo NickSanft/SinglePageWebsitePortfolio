@@ -16,11 +16,15 @@ def load_data():
     if not os.path.exists("website_data.json"):
         dummy_data = {
             "website_title": "My Awesome Developer Portfolio",
-            "portfolio_name": "MyPortfolio",
+            # === NEW: Replaced portfolio_name with an SVG logo ===
+            "logo_svg": '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
             "hero_title": "Your Name",
             "hero_subtitle": "Software Developer | Python & JavaScript Enthusiast",
             "hero_image_url": "https://placehold.co/256x256/e0e0e0/333333?text=You",
             "about_me": "Hello! I'm a software developer with a passion for building clean and efficient solutions. I specialize in web development and enjoy working with Python, JavaScript, and modern front-end frameworks. My goal is to create impactful and user-friendly applications.",
+            # === NEW: Professional framing for the interactive section ===
+            "sandbox_title": "Interactive UI Sandbox",
+            "sandbox_description": "This interactive sandbox showcases a range of front-end development skills. The theme customization is built with CSS variables and managed via JavaScript's localStorage for state persistence. The section reordering utilizes the SortableJS library and direct DOM manipulation to provide a dynamic user experience, complete with keyboard accessibility.",
             "theme_colors": {
                 "light": {
                     "background": "#f9fafb",
@@ -95,7 +99,8 @@ def load_data():
                 "github_url": "https://github.com/yourusername",
                 "linkedin_url": "https://linkedin.com/in/yourusername",
                 "bandcamp_url": "https://yourusername.bandcamp.com",
-                "kofi_url": "https://ko-fi.com/yourusername"
+                "kofi_url": "https://ko-fi.com/yourusername",
+                "resume_url": "#"
             },
             "copyright_name": "Your Name",
             "copyright_start_year": 2024
@@ -441,8 +446,13 @@ template = """
             <div class="max-w-6xl mx-auto flex flex-col-reverse md:flex-row items-center justify-center gap-10 md:gap-16">
                 <div class="text-center md:text-left stagger-item">
                     <h1 class="font-heading text-4xl md:text-6xl font-bold mb-2 text-[var(--color-text-primary)]">{{ hero_title }}</h1>
-                    <p class="font-heading text-xl md:text-2xl text-[var(--color-accent)] font-semibold mb-4">{{ hero_subtitle }}</p>
-                    <p class="text-lg text-[var(--color-text-secondary)] max-w-2xl">{{ about_me }}</p>
+                    <p class="font-heading text-xl md:text-2xl text-[var(--color-accent)] font-semibold mb-6">{{ hero_subtitle }}</p>
+                    <p class="text-lg text-[var(--color-text-secondary)] max-w-2xl mb-8">{{ about_me }}</p>
+                    {% if contact_info.resume_url %}
+                    <a href="{{ contact_info.resume_url }}" target="_blank" class="inline-block px-6 py-3 rounded-lg bg-[var(--color-accent)] text-white font-semibold hover:bg-[var(--color-accent-hover)] transition-colors duration-300 shadow-lg">
+                        Download Resume <i class="fas fa-download ml-2"></i>
+                    </a>
+                    {% endif %}
                 </div>
                 <div class="flex-shrink-0 stagger-item">
                      <img src="{{ hero_image_url }}" alt="A picture of {{ copyright_name }}" class="rounded-full w-48 h-48 md:w-64 md:h-64 object-cover shadow-2xl border-4 border-white dark:border-gray-700 transform hover:scale-105 transition-transform duration-300">
@@ -488,8 +498,9 @@ template = """
 
         <section id="play" class="py-24 fade-in-section">
           <div id="play-controls" class="max-w-4xl mx-auto text-center">
-            <h2 class="font-heading text-4xl font-bold mb-8">Play with this website!</h2>
-            <div class="grid md:grid-cols-2 gap-12 text-left">
+            <h2 class="font-heading text-4xl font-bold mb-4">{{ sandbox_title }}</h2>
+            <p class="max-w-3xl mx-auto mb-8 text-[var(--color-text-secondary)]">{{ sandbox_description }}</p>
+            <div class="grid md:grid-cols-2 gap-12 text-left p-8 rounded-lg bg-[var(--color-card-background)] shadow-inner">
                 <div>
                     <h3 class="font-heading text-2xl font-semibold mb-4 text-center md:text-left">Customize Theme</h3>
                     <p class="mb-4 text-[var(--color-text-secondary)]">Choose your own theme colors below. Your changes will apply separately for light and dark mode and be saved locally.</p>
