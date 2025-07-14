@@ -6,11 +6,10 @@ import requests
 import zipfile
 import io
 
-# --- UPDATED: Simplified Flask app setup, will add explicit routes ---
 app = Flask(__name__, static_url_path='', static_folder='output')
 
 
-# Load and process data from external JSON file
+# Load and process data from the external JSON file
 def load_data():
     # Create a dummy website_data.json if it doesn't exist for demonstration
     if not os.path.exists("website_data.json"):
@@ -835,9 +834,6 @@ def write_static_html():
             print(f"Error downloading tailwindcss.js: {e}")
 
     data = load_data()
-    # For the dev server, use absolute paths
-    server_template = template
-
     # For the static file, use relative paths
     file_template = template.replace('src="/static/', 'src="static/').replace('href="/static/', 'href="static/')
     rendered_for_file = render_template_string(file_template, **data)
