@@ -56,7 +56,6 @@ html = '''
       position: absolute;
       top: 0; left: 0;
       width: 100%; height: 100%;
-      background: rgba(14, 15, 44, 0.6);
     }
 
     header h1 {
@@ -131,24 +130,23 @@ html = '''
   </footer>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.net.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.fog.min.js"></script>
   <script>
-    VANTA.NET({
+    VANTA.FOG({
       el: "#vanta-bg",
       mouseControls: true,
       touchControls: true,
       gyroControls: false,
-      minHeight: 200.00,
-      minWidth: 200.00,
-      scale: 1.0,
-      scaleMobile: 1.0,
-      color: 0xc1a1ff,
-      backgroundColor: 0x0e0f2c,
-      points: 10.0,
-      maxDistance: 20.0,
-      spacing: 18.0
+      highlightColor: 0xaaffcc,
+      midtoneColor: 0x44ffd9,
+      lowlightColor: 0x2255aa,
+      baseColor: 0x0e0f2c,
+      blurFactor: 0.7,
+      speed: 1.5,
+      zoom: 0.85
     });
   </script>
+
 </body>
 </html>
 '''
