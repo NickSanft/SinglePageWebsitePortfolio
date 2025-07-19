@@ -12,7 +12,8 @@ html = '''
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{{ artist_name }} - Dreamy Vibes</title>
+  <title>{{ artist_name }}</title>
+  <link rel="icon" href="{{ artist_icon }}">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -195,7 +196,8 @@ def export_static_html():
         artist_hero_image=data['artist_hero_image'],
         artist_contact_email=data['artist_contact_email'],
         artist_links=data['contact_info'],
-        hero_image=data['artist_image'],
+        artist_image=data['artist_image'],
+        artist_icon=data['artist_icon'],
         copyright_string=data.get('copyright_string')
     )
     output_dir = os.path.join("output", "music")
@@ -214,6 +216,7 @@ def home():
         artist_contact_email=data['artist_contact_email'],
         artist_links=data['contact_info'],
         artist_image=data['artist_image'],
+        artist_icon=data['artist_icon'],
         copyright_string=data.get('copyright_string')
     )
 
