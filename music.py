@@ -79,11 +79,11 @@ html = '''
     }
 
     .about, .music, .contact {
-      background: rgba(255, 255, 255, 0.02);
+      background: rgba(255, 255, 255, 0.12); /* was 0.02 */
       border-radius: 12px;
       padding: 40px;
-      backdrop-filter: blur(8px);
-      box-shadow: 0 0 20px rgba(193, 161, 255, 0.2);
+      backdrop-filter: blur(4px); /* was 8px */
+      box-shadow: 0 0 30px rgba(193, 161, 255, 0.25); /* slightly more pronounced glow */
     }
 
     .music iframe {
