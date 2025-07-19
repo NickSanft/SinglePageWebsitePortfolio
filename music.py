@@ -35,9 +35,15 @@ html = '''
       overflow-x: hidden;
     }
 
+    #vanta-bg {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100vh;
+      z-index: -1;
+    }
+
     header {
       height: 100vh;
-      background: url('{{ artist_hero_image }}') no-repeat center center/cover;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -94,18 +100,10 @@ html = '''
       font-size: 0.9rem;
       color: #aaa;
     }
-
-    .stars {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      pointer-events: none;
-      z-index: 0;
-    }
   </style>
 </head>
 <body>
-  <canvas class="stars"></canvas>
+  <div id="vanta-bg"></div>
   <header>
     <h1>{{ artist_name }}</h1>
   </header>
@@ -132,43 +130,24 @@ html = '''
     &copy; {{ copyright_string }} {{ artist_name }}. All rights reserved.
   </footer>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.net.min.js"></script>
   <script>
-    const canvas = document.querySelector(".stars");
-    const ctx = canvas.getContext("2d");
-    let width = canvas.width = window.innerWidth;
-    let height = canvas.height = window.innerHeight;
-    let stars = Array.from({ length: 120 }, () => ({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      radius: Math.random() * 1.5 + 0.3,
-      alpha: Math.random()
-    }));
-
-    function drawStars() {
-      ctx.clearRect(0, 0, width, height);
-      stars.forEach(star => {
-        ctx.beginPath();
-        ctx.arc(star.x, star.y, star.radius, 0, 2 * Math.PI);
-        ctx.fillStyle = `rgba(255, 255, 255, ${star.alpha})`;
-        ctx.fill();
-      });
-    }
-
-    function animateStars() {
-      stars.forEach(star => {
-        star.alpha += (Math.random() - 0.5) * 0.05;
-        star.alpha = Math.min(Math.max(star.alpha, 0.2), 1);
-      });
-      drawStars();
-      requestAnimationFrame(animateStars);
-    }
-
-    window.addEventListener('resize', () => {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
+    VANTA.NET({
+      el: "#vanta-bg",
+      mouseControls: true,
+      touchControls: true,
+      gyroControls: false,
+      minHeight: 200.00,
+      minWidth: 200.00,
+      scale: 1.0,
+      scaleMobile: 1.0,
+      color: 0xc1a1ff,
+      backgroundColor: 0x0e0f2c,
+      points: 10.0,
+      maxDistance: 20.0,
+      spacing: 18.0
     });
-
-    animateStars();
   </script>
 </body>
 </html>
