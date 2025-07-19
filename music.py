@@ -43,7 +43,7 @@ html = '''
     }
 
     header {
-      height: 100vh;
+      height: 20vh;
       display: flex;
       align-items: center;
       justify-content: center;
