@@ -1,6 +1,5 @@
 import datetime
 import os
-
 from flask import Flask, render_template_string
 import json
 
@@ -178,7 +177,6 @@ html = '''
 def load_data():
     with open('website_data.json', 'r') as f:
         data = json.load(f)
-    print(data)
 
     start_year = data.get("copyright_start_year")
     current_year = datetime.datetime.now().year
@@ -188,27 +186,7 @@ def load_data():
         data["copyright_string"] = str(current_year)
     return data
 
-def export_static_html():
-    data = load_data()
-    rendered = render_template_string(html,
-        artist_name=data['artist_name'],
-        artist_about=data['artist_about'],
-        artist_hero_image=data['artist_hero_image'],
-        artist_contact_email=data['artist_contact_email'],
-        artist_links=data['contact_info'],
-        artist_image=data['artist_image'],
-        artist_icon=data['artist_icon'],
-        copyright_string=data.get('copyright_string')
-    )
-    output_dir = os.path.join("output", "music")
-    os.makedirs(output_dir, exist_ok=True)
-    with open("./output/music/index.html", "w", encoding="utf-8") as f:
-        f.write(rendered)
-    print("Static HTML exported to index.html")
-@app.route('/')
-def home():
-    export_static_html()
-    data = load_data()
+def render_html(data):
     return render_template_string(html,
         artist_name=data['artist_name'],
         artist_about=data['artist_about'],
@@ -219,6 +197,21 @@ def home():
         artist_icon=data['artist_icon'],
         copyright_string=data.get('copyright_string')
     )
+
+def export_static_html():
+    data = load_data()
+    rendered = render_html(data)
+    output_dir = os.path.join("output", "music")
+    os.makedirs(output_dir, exist_ok=True)
+    with open("./output/music/index.html", "w", encoding="utf-8") as f:
+        f.write(rendered)
+    print("Static HTML exported to index.html")
+
+@app.route('/')
+def home():
+    export_static_html()
+    data = load_data()
+    return render_html(data)
 
 if __name__ == '__main__':
     app.run(debug=True)
