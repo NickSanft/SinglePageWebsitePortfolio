@@ -227,43 +227,46 @@ html = '''
       border: none;
     }
     
-    /* UPDATED: All Music Grid */
     .music-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 25px;
+        display: flex; /* Use flexbox */
+        flex-direction: column; /* Stack items vertically */
+        gap: 30px; /* Space between each vertical music item */
         margin-top: 40px;
+        /* Ensure scrollbar visibility for Webkit browsers (Chrome, Safari) if needed */
+        -ms-overflow-style: initial; /* Reset for IE/Edge */
+        scrollbar-width: initial; /* Reset for Firefox */
     }
-
+    
+    .music-grid::-webkit-scrollbar {
+        display: initial;
+    }
+    
     .music-item {
+        width: 100%; /* Make each item take full width of the glass-card */
         color: var(--text-color);
         transition: transform 0.3s ease;
         display: flex;
-        flex-direction: column;
+        flex-direction: column; /* Stack content within each item */
         gap: 15px;
+        /* Removed align-items: center to allow content to stretch to full width */
+        /* text-align: left; // Default text alignment is usually left, but explicitly setting if needed */
     }
     
     .music-item:hover {
-        transform: scale(1.05);
+        transform: scale(1.02); /* Slightly less pronounced hover for vertical stack */
     }
-
+    
     .music-embed-item {
-        width: 100%;
+        width: 100%; /* Make the embed container take full width of its parent (.music-item) */
         border-radius: 8px;
         overflow: hidden;
     }
-
+    
     .music-embed-item iframe {
-        width: 100%;
+        width: 100%; /* Ensure the iframe fills its container */
         height: 120px;
         border: none;
         display: block;
-    }
-    
-    .music-item h3 {
-        font-size: 1rem;
-        font-weight: 400;
-        text-align: center;
     }
 
 
@@ -388,9 +391,8 @@ html = '''
                 {% for music in all_music %}
                 <div class="music-item">
                     <div class="music-embed-item">
-                        <iframe src="{{ music.artwork_url }}" seamless><a href="{{ music.music_url }}">{{ music.music_title }}</a></iframe>
+                        <iframe  src="{{ music.artwork_url }}" seamless><a href="{{ music.music_url }}">{{ music.music_title }}</a></iframe>
                     </div>
-                    <h3>{{ music.music_title }}</h3>
                 </div>
                 {% endfor %}
             </div>
