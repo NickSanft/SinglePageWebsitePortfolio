@@ -227,31 +227,37 @@ html = '''
       border: none;
     }
     
-    /* NEW: All Music Grid */
+    /* UPDATED: All Music Grid */
     .music-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
         gap: 25px;
         margin-top: 40px;
     }
 
     .music-item {
-        text-decoration: none;
         color: var(--text-color);
         transition: transform 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
     }
     
     .music-item:hover {
         transform: scale(1.05);
     }
 
-    .music-item img {
+    .music-embed-item {
         width: 100%;
-        height: auto;
         border-radius: 8px;
-        margin-bottom: 10px;
-        aspect-ratio: 1 / 1;
-        object-fit: cover;
+        overflow: hidden;
+    }
+
+    .music-embed-item iframe {
+        width: 100%;
+        height: 120px;
+        border: none;
+        display: block;
     }
     
     .music-item h3 {
@@ -373,32 +379,20 @@ html = '''
         </div>
       </section>
       
-      <!-- NEW: All Music Section -->
+      <!-- UPDATED: All Music Section is now data-driven -->
       <section id="all-music" class="section scroll-animate">
         <div class="glass-card">
             <h2>More Music</h2>
             <div class="music-grid">
-                <!-- This part would be populated by a loop in a real application -->
-                <!-- Placeholder Item 1 -->
-                <a href="#" class="music-item">
-                    <img src="https://placehold.co/300x300/1f1f3c/c1a1ff?text=Album+1" alt="Album 1 Cover">
-                    <h3>Album Title One</h3>
-                </a>
-                <!-- Placeholder Item 2 -->
-                <a href="#" class="music-item">
-                    <img src="https://placehold.co/300x300/1f1f3c/c1a1ff?text=Album+2" alt="Album 2 Cover">
-                    <h3>Album Title Two</h3>
-                </a>
-                <!-- Placeholder Item 3 -->
-                <a href="#" class="music-item">
-                    <img src="https://placehold.co/300x300/1f1f3c/c1a1ff?text=Album+3" alt="Album 3 Cover">
-                    <h3>Single Title</h3>
-                </a>
-                <!-- Placeholder Item 4 -->
-                <a href="#" class="music-item">
-                    <img src="https://placehold.co/300x300/1f1f3c/c1a1ff?text=Album+4" alt="Album 4 Cover">
-                    <h3>Another Album</h3>
-                </a>
+                <!-- This part is now populated by a loop from your data file -->
+                {% for music in all_music %}
+                <div class="music-item">
+                    <div class="music-embed-item">
+                        <iframe src="{{ music.artwork_url }}" seamless><a href="{{ music.music_url }}">{{ music.music_title }}</a></iframe>
+                    </div>
+                    <h3>{{ music.music_title }}</h3>
+                </div>
+                {% endfor %}
             </div>
         </div>
       </section>
@@ -414,7 +408,6 @@ html = '''
                     <a href="{{ artist_links.spotify }}" target="_blank" aria-label="Spotify"><i data-feather="headphones"></i></a>
                     <a href="{{ artist_links.instagram }}" target="_blank" aria-label="Instagram"><i data-feather="instagram"></i></a>
                     <a href="{{ artist_links.twitter }}" target="_blank" aria-label="Twitter"><i data-feather="twitter"></i></a>
-                    <!-- NEW: Ko-fi link -->
                     <a href="{{ artist_links.kofi }}" target="_blank" aria-label="Ko-fi"><i data-feather="coffee"></i></a>
                 </div>
             </div>
@@ -504,6 +497,7 @@ def render_html(data):
         artist_name=data['artist_name'],
         artist_about=data['artist_about'],
         latest_music=data['latest_music'],
+        all_music=data['all_music'],
         artist_hero_image=data['artist_hero_image'],
         artist_contact_email=data['artist_contact_email'],
         artist_links=data['contact_info'],
