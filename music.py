@@ -114,7 +114,7 @@ html = '''
 
   <section class="section music">
     <h2>Latest Music</h2>
-    <iframe style="border: 0; width: 100%; height: 120px;" src="https://bandcamp.com/EmbeddedPlayer/album=1491704455/size=large/bgcol=181a1b/linkcol=056cc4/tracklist=false/artwork=small/transparent=true/" seamless><a href="https://divora.bandcamp.com/album/origins-of-the-gyre-dnd-6">Origins Of The Gyre - DND 6 by Divora</a></iframe>
+    <iframe style="border: 0; width: 100%; height: 120px;" src="{{ latest_music.artwork_url }}" seamless><a href="{{ latest_music.music_url }}">{{ latest_music.music_title }}</a></iframe>
   </section>
 
   <section class="section contact">
@@ -167,6 +167,7 @@ def render_html(data):
     return render_template_string(html,
         artist_name=data['artist_name'],
         artist_about=data['artist_about'],
+        latest_music=data['latest_music'],
         artist_hero_image=data['artist_hero_image'],
         artist_contact_email=data['artist_contact_email'],
         artist_links=data['contact_info'],
