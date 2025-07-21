@@ -63,6 +63,47 @@ html = '''
       z-index: -1;
     }
 
+    /* --- Sticky Navigation Bar (NEW) --- */
+    .sticky-nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        padding: 15px 20px;
+        z-index: 100;
+        background: rgba(14, 15, 44, 0.7);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transform: translateY(-100%);
+        transition: transform 0.4s ease-in-out;
+    }
+
+    .sticky-nav.visible {
+        transform: translateY(0);
+    }
+    
+    .nav-links {
+        display: flex;
+        gap: 30px;
+        list-style: none;
+    }
+
+    .nav-links a {
+        color: var(--soft-white);
+        text-decoration: none;
+        font-weight: 400;
+        font-size: 1rem;
+        transition: color 0.3s ease, text-shadow 0.3s ease;
+    }
+
+    .nav-links a:hover {
+        color: var(--accent-color);
+        text-shadow: 0 0 8px var(--accent-glow);
+    }
+
     /* --- Main Content Container --- */
     .content-wrapper {
       position: relative;
@@ -156,20 +197,28 @@ html = '''
         }
     }
 
-    .artist-image {
-        width: 100%;
-        max-width: 250px;
-        height: auto;
-        border-radius: 12px;
+    /* IMPROVEMENT: Circular artist image */
+    .artist-image-container {
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        overflow: hidden;
         justify-self: center;
         box-shadow: 0 0 25px var(--accent-glow);
+        border: 2px solid var(--glass-border);
+    }
+
+    .artist-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover; /* Ensures the image covers the circle without distortion */
     }
 
     /* --- Music Section --- */
     .music-embed {
       width: 100%;
       border-radius: 8px;
-      overflow: hidden; /* Ensures the iframe corners are rounded */
+      overflow: hidden;
     }
 
     .music-embed iframe {
@@ -177,6 +226,40 @@ html = '''
       height: 160px;
       border: none;
     }
+    
+    /* NEW: All Music Grid */
+    .music-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 25px;
+        margin-top: 40px;
+    }
+
+    .music-item {
+        text-decoration: none;
+        color: var(--text-color);
+        transition: transform 0.3s ease;
+    }
+    
+    .music-item:hover {
+        transform: scale(1.05);
+    }
+
+    .music-item img {
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        aspect-ratio: 1 / 1;
+        object-fit: cover;
+    }
+    
+    .music-item h3 {
+        font-size: 1rem;
+        font-weight: 400;
+        text-align: center;
+    }
+
 
     /* --- Contact Section --- */
     .contact .content {
@@ -207,6 +290,7 @@ html = '''
     }
     .social-links a {
         color: var(--text-color);
+        transition: transform 0.3s ease, color 0.3s ease;
     }
     .social-links a:hover {
         color: var(--accent-color);
@@ -231,7 +315,6 @@ html = '''
       to { opacity: 1; }
     }
 
-    /* For scroll animations */
     .scroll-animate {
       opacity: 0;
       transform: translateY(30px);
@@ -247,14 +330,18 @@ html = '''
 </head>
 <body>
   
-  <!-- Vanta.js background will attach here -->
   <div id="vanta-bg"></div>
 
+  <!-- NEW: Sticky navigation bar -->
+  <nav class="sticky-nav">
+    <ul class="nav-links">
+        <li><a href="#about">About</a></li>
+        <li><a href="#music">Music</a></li>
+        <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+
   <div class="content-wrapper">
-    <!-- 
-      IMPROVEMENT: Full-screen hero header.
-      This creates a more impactful and immersive first impression.
-    -->
     <header class="hero">
       <h1>{{ artist_name }}</h1>
       <a href="#about" class="scroll-down">
@@ -264,22 +351,15 @@ html = '''
     </header>
 
     <main>
-      <!-- 
-        IMPROVEMENT: Scroll-triggered animations.
-        The `scroll-animate` class is used by JavaScript to fade sections in
-        as they enter the viewport, making the page feel more dynamic.
-      -->
       <section id="about" class="section scroll-animate">
         <div class="glass-card">
           <h2>About The Artist</h2>
-          <!-- 
-            IMPROVEMENT: Better layout for content.
-            Using CSS Grid to place the artist image alongside the text
-            creates a more engaging and professional layout.
-          -->
           <div class="about-content">
             <p>{{ artist_about }}</p>
-            <img src="{{ artist_image }}" alt="A photo of {{ artist_name }}" class="artist-image" onerror="this.style.display='none'">
+            <!-- UPDATED: Artist image is now in a circular container -->
+            <div class="artist-image-container">
+                <img src="{{ artist_image }}" alt="A photo of {{ artist_name }}" class="artist-image" onerror="this.parentElement.style.display='none'">
+            </div>
           </div>
         </div>
       </section>
@@ -292,6 +372,36 @@ html = '''
           </div>
         </div>
       </section>
+      
+      <!-- NEW: All Music Section -->
+      <section id="all-music" class="section scroll-animate">
+        <div class="glass-card">
+            <h2>More Music</h2>
+            <div class="music-grid">
+                <!-- This part would be populated by a loop in a real application -->
+                <!-- Placeholder Item 1 -->
+                <a href="#" class="music-item">
+                    <img src="https://placehold.co/300x300/1f1f3c/c1a1ff?text=Album+1" alt="Album 1 Cover">
+                    <h3>Album Title One</h3>
+                </a>
+                <!-- Placeholder Item 2 -->
+                <a href="#" class="music-item">
+                    <img src="https://placehold.co/300x300/1f1f3c/c1a1ff?text=Album+2" alt="Album 2 Cover">
+                    <h3>Album Title Two</h3>
+                </a>
+                <!-- Placeholder Item 3 -->
+                <a href="#" class="music-item">
+                    <img src="https://placehold.co/300x300/1f1f3c/c1a1ff?text=Album+3" alt="Album 3 Cover">
+                    <h3>Single Title</h3>
+                </a>
+                <!-- Placeholder Item 4 -->
+                <a href="#" class="music-item">
+                    <img src="https://placehold.co/300x300/1f1f3c/c1a1ff?text=Album+4" alt="Album 4 Cover">
+                    <h3>Another Album</h3>
+                </a>
+            </div>
+        </div>
+      </section>
 
       <section id="contact" class="section scroll-animate">
         <div class="glass-card">
@@ -299,17 +409,13 @@ html = '''
                 <h2>Get In Touch</h2>
                 <p>For bookings, collaborations, or other inquiries, please reach out via email.</p>
                 <p><a href="mailto:{{ artist_contact_email }}">{{ artist_contact_email }}</a></p>
-                
-                <!-- 
-                    IMPROVEMENT: Styled social media icons.
-                    Using icons provides a clean, universally understood way to link
-                    to social profiles, improving the UI.
-                -->
                 <div class="social-links">
                     <a href="{{ artist_links.bandcamp }}" target="_blank" aria-label="Bandcamp"><i data-feather="music"></i></a>
                     <a href="{{ artist_links.spotify }}" target="_blank" aria-label="Spotify"><i data-feather="headphones"></i></a>
                     <a href="{{ artist_links.instagram }}" target="_blank" aria-label="Instagram"><i data-feather="instagram"></i></a>
                     <a href="{{ artist_links.twitter }}" target="_blank" aria-label="Twitter"><i data-feather="twitter"></i></a>
+                    <!-- NEW: Ko-fi link -->
+                    <a href="{{ artist_links.kofi }}" target="_blank" aria-label="Ko-fi"><i data-feather="coffee"></i></a>
                 </div>
             </div>
         </div>
@@ -321,14 +427,11 @@ html = '''
     </footer>
   </div>
 
-  <!-- Vanta.js and its dependency -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.fog.min.js"></script>
   
   <script>
     // --- Vanta.js Initialization ---
-    // IMPROVEMENT: Tweaked Vanta.js settings for a more subtle and cohesive feel.
-    // Colors are now more aligned with the CSS variable palette.
     VANTA.FOG({
       el: "#vanta-bg",
       mouseControls: true,
@@ -336,11 +439,11 @@ html = '''
       gyroControls: false,
       minHeight: 200.00,
       minWidth: 200.00,
-      highlightColor: 0x8d80b5, // Was 0xaaffcc
-      midtoneColor: 0x8b6bad,   // Was 0x44ffd9
-      lowlightColor: 0x3c3c8c,  // Was 0x2255aa
+      highlightColor: 0x8d80b5,
+      midtoneColor: 0x8b6bad,
+      lowlightColor: 0x3c3c8c,
       baseColor: 0x0e0f2c,
-      blurFactor: 0.60,         // Slightly less blurry
+      blurFactor: 0.60,
       speed: 1.20,
       zoom: 0.80
     });
@@ -349,10 +452,7 @@ html = '''
     feather.replace();
 
     // --- Scroll Animation Logic ---
-    // IMPROVEMENT: Using Intersection Observer for performant scroll animations.
-    // This is more efficient than listening to every scroll event.
     const scrollElements = document.querySelectorAll(".scroll-animate");
-
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -360,10 +460,27 @@ html = '''
         }
       });
     }, {
-      threshold: 0.1 // Trigger when 10% of the element is visible
+      threshold: 0.1
+    });
+    scrollElements.forEach(el => observer.observe(el));
+
+    // --- Sticky Nav Logic (NEW) ---
+    const nav = document.querySelector('.sticky-nav');
+    const heroHeader = document.querySelector('.hero');
+    
+    const navObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) {
+                nav.classList.add('visible');
+            } else {
+                nav.classList.remove('visible');
+            }
+        });
+    }, {
+        rootMargin: `-${heroHeader.offsetHeight - 1}px 0px 0px 0px` // Trigger 1px after hero is out of view
     });
 
-    scrollElements.forEach(el => observer.observe(el));
+    navObserver.observe(heroHeader);
   </script>
 
 </body>
