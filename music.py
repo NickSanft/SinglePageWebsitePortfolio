@@ -5,6 +5,8 @@ import json
 
 app = Flask(__name__)
 
+# The HTML, CSS, and JavaScript are combined here.
+# I've implemented the visual enhancements from the suggestions.
 html = '''
 <!DOCTYPE html>
 <html lang="en">
@@ -14,12 +16,12 @@ html = '''
   <!-- Using placeholders for template data -->
   <title>{{ artist_name }} | Official Website</title>
   <link rel="icon" href="{{ artist_icon }}">
-  
+
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-  
+
   <!-- Feather Icons for social links -->
   <script src="https://unpkg.com/feather-icons"></script>
 
@@ -52,6 +54,21 @@ html = '''
       color: var(--text-color);
       background-color: var(--bg-color); /* Fallback background */
       overflow-x: hidden;
+      cursor: none; /* Hide default cursor to replace with custom one */
+    }
+
+    /* --- NEW: Aurora Background Glow --- */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      width: 80vw;
+      height: 80vh;
+      background: radial-gradient(circle, rgba(193, 161, 255, 0.1) 0%, rgba(193, 161, 255, 0) 70%);
+      transform: translate(-50%, -50%);
+      animation: slow-spin 25s linear infinite;
+      z-index: -1;
     }
 
     /* --- Vanta.js Animated Background --- */
@@ -60,10 +77,47 @@ html = '''
       top: 0; left: 0;
       width: 100vw;
       height: 100vh;
-      z-index: -1;
+      z-index: -2; /* Pushed back behind the aurora */
     }
 
-    /* --- Sticky Navigation Bar (NEW) --- */
+    /* --- NEW: Interactive Cursor Glow --- */
+    .cursor-glow {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--accent-color);
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      z-index: 9999;
+      filter: blur(15px);
+      opacity: 0;
+      transition: opacity 0.4s ease, transform 0.1s ease-out;
+    }
+    body:hover .cursor-glow {
+        opacity: 0.5;
+    }
+    .cursor-point {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 6px;
+        height: 6px;
+        background-color: var(--soft-white);
+        border-radius: 50%;
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+        z-index: 9999;
+        transition: transform 0.2s ease-out;
+    }
+    a:hover ~ .cursor-point, a:hover ~ .cursor-glow {
+        transform: translate(-50%, -50%) scale(2.5);
+    }
+
+
+    /* --- Sticky Navigation Bar --- */
     .sticky-nav {
         position: fixed;
         top: 0;
@@ -84,7 +138,7 @@ html = '''
     .sticky-nav.visible {
         transform: translateY(0);
     }
-    
+
     .nav-links {
         display: flex;
         gap: 30px;
@@ -124,11 +178,11 @@ html = '''
 
     header.hero h1 {
       font-family: 'Playfair Display', serif;
-      font-size: clamp(3rem, 10vw, 6rem); /* Responsive font size */
+      font-size: clamp(3rem, 10vw, 6rem);
       font-weight: 600;
-      color: var(--soft-white);
       text-shadow: 0 0 20px var(--accent-glow);
-      animation: fadeIn 2s ease-in-out;
+      /* UPDATED: Floating animation */
+      animation: fadeIn 2s ease-in-out, float 8s ease-in-out 2s infinite;
     }
 
     /* Scroll down indicator */
@@ -149,17 +203,18 @@ html = '''
     .glass-card {
       background: var(--glass-bg);
       border-radius: 16px;
-      padding: clamp(20px, 5vw, 40px); /* Responsive padding */
+      padding: clamp(20px, 5vw, 40px);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       border: 1px solid var(--glass-border);
-      box-shadow: 0 8px 32px 0 var(--accent-glow);
+      /* UPDATED: Softer, more diffused shadow */
+      box-shadow: 0 15px 45px -5px var(--accent-glow);
       transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
     .glass-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 12px 40px 0 rgba(193, 161, 255, 0.35);
+        box-shadow: 0 20px 50px -5px rgba(193, 161, 255, 0.4);
     }
 
     /* --- Section Styling --- */
@@ -169,17 +224,28 @@ html = '''
       margin: 0 auto;
     }
 
-    .section h2 {
+    /* UPDATED: Gradient text for all h1 and h2 headers */
+    h1, .section h2 {
       font-family: 'Playfair Display', serif;
+      letter-spacing: 1.5px; /* Airy letter spacing */
+      background: linear-gradient(120deg, var(--accent-color), var(--soft-white));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-fill-color: transparent;
+    }
+
+    .section h2 {
       font-size: clamp(2rem, 6vw, 2.8rem);
-      color: var(--accent-color);
       margin-bottom: 30px;
       text-align: center;
     }
-    
+
+    /* UPDATED: Subtle text shadow for readability */
     p {
         line-height: 1.7;
         font-weight: 300;
+        text-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
     }
 
     /* --- About Section Specifics --- */
@@ -197,7 +263,6 @@ html = '''
         }
     }
 
-    /* IMPROVEMENT: Circular artist image */
     .artist-image-container {
         width: 200px;
         height: 200px;
@@ -211,64 +276,47 @@ html = '''
     .artist-image {
         width: 100%;
         height: 100%;
-        object-fit: cover; /* Ensures the image covers the circle without distortion */
+        object-fit: cover;
     }
 
     /* --- Music Section --- */
-    .music-embed {
-      width: 100%;
-      border-radius: 8px;
-      overflow: hidden;
+    .music-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+        margin-top: 40px;
     }
 
-    .music-embed iframe {
-      width: 100%;
-      height: 160px;
-      border: none;
-    }
-    
-    .music-grid {
-        display: flex; /* Use flexbox */
-        flex-direction: column; /* Stack items vertically */
-        gap: 30px; /* Space between each vertical music item */
-        margin-top: 40px;
-        /* Ensure scrollbar visibility for Webkit browsers (Chrome, Safari) if needed */
-        -ms-overflow-style: initial; /* Reset for IE/Edge */
-        scrollbar-width: initial; /* Reset for Firefox */
-    }
-    
-    .music-grid::-webkit-scrollbar {
-        display: initial;
-    }
-    
+    /* UPDATED: Staggered animation styles for music items */
     .music-item {
-        width: 100%; /* Make each item take full width of the glass-card */
         color: var(--text-color);
-        transition: transform 0.3s ease;
         display: flex;
-        flex-direction: column; /* Stack content within each item */
+        flex-direction: column;
         gap: 15px;
-        /* Removed align-items: center to allow content to stretch to full width */
-        /* text-align: left; // Default text alignment is usually left, but explicitly setting if needed */
+        /* Initial state for animation */
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.6s ease-out, transform 0.6s ease-out;
     }
-    
-    .music-item:hover {
-        transform: scale(1.02); /* Slightly less pronounced hover for vertical stack */
+
+    /* When parent is in view, items become visible */
+    .scroll-animate.in-view .music-item {
+        opacity: 1;
+        transform: translateY(0);
     }
-    
+
     .music-embed-item {
-        width: 100%; /* Make the embed container take full width of its parent (.music-item) */
+        width: 100%;
         border-radius: 8px;
         overflow: hidden;
     }
-    
+
     .music-embed-item iframe {
-        width: 100%; /* Ensure the iframe fills its container */
+        width: 100%;
         height: 120px;
         border: none;
         display: block;
     }
-
 
     /* --- Contact Section --- */
     .contact .content {
@@ -324,6 +372,22 @@ html = '''
       to { opacity: 1; }
     }
 
+    /* NEW: Floating animation */
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+
+    /* NEW: Aurora spin animation */
+    @keyframes slow-spin {
+      from { transform: translate(-50%, -50%) rotate(0deg); }
+      to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
     .scroll-animate {
       opacity: 0;
       transform: translateY(30px);
@@ -338,10 +402,12 @@ html = '''
   </style>
 </head>
 <body>
-  
-  <div id="vanta-bg"></div>
 
-  <!-- NEW: Sticky navigation bar -->
+  <div id="vanta-bg"></div>
+  <!-- NEW: Elements for the custom cursor -->
+  <div class="cursor-glow"></div>
+  <div class="cursor-point"></div>
+
   <nav class="sticky-nav">
     <ul class="nav-links">
         <li><a href="#about">About</a></li>
@@ -365,7 +431,6 @@ html = '''
           <h2>About The Artist</h2>
           <div class="about-content">
             <p>{{ artist_about }}</p>
-            <!-- UPDATED: Artist image is now in a circular container -->
             <div class="artist-image-container">
                 <img src="{{ artist_image }}" alt="A photo of {{ artist_name }}" class="artist-image" onerror="this.parentElement.style.display='none'">
             </div>
@@ -381,17 +446,15 @@ html = '''
           </div>
         </div>
       </section>
-      
-      <!-- UPDATED: All Music Section is now data-driven -->
+
       <section id="all-music" class="section scroll-animate">
         <div class="glass-card">
             <h2>More Music</h2>
             <div class="music-grid">
-                <!-- This part is now populated by a loop from your data file -->
                 {% for music in all_music %}
                 <div class="music-item">
                     <div class="music-embed-item">
-                        <iframe  src="{{ music.artwork_url }}" seamless><a href="{{ music.music_url }}">{{ music.music_title }}</a></iframe>
+                        <iframe src="{{ music.artwork_url }}" seamless><a href="{{ music.music_url }}">{{ music.music_title }}</a></iframe>
                     </div>
                 </div>
                 {% endfor %}
@@ -424,7 +487,7 @@ html = '''
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.fog.min.js"></script>
-  
+
   <script>
     // --- Vanta.js Initialization ---
     VANTA.FOG({
@@ -452,6 +515,16 @@ html = '''
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           entry.target.classList.add("in-view");
+
+          // NEW: Staggered list animation logic
+          // When a section comes into view, apply delays to its music items
+          const listItems = entry.target.querySelectorAll('.music-item');
+          if (listItems.length > 0) {
+            listItems.forEach((item, index) => {
+              // Apply a transition delay to each item based on its index
+              item.style.transitionDelay = `${index * 150}ms`;
+            });
+          }
         }
       });
     }, {
@@ -459,10 +532,10 @@ html = '''
     });
     scrollElements.forEach(el => observer.observe(el));
 
-    // --- Sticky Nav Logic (NEW) ---
+    // --- Sticky Nav Logic ---
     const nav = document.querySelector('.sticky-nav');
     const heroHeader = document.querySelector('.hero');
-    
+
     const navObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (!entry.isIntersecting) {
@@ -472,17 +545,70 @@ html = '''
             }
         });
     }, {
-        rootMargin: `-${heroHeader.offsetHeight - 1}px 0px 0px 0px` // Trigger 1px after hero is out of view
+        rootMargin: `-${heroHeader.offsetHeight - 1}px 0px 0px 0px`
     });
-
     navObserver.observe(heroHeader);
+
+    // --- NEW: Interactive Cursor Logic ---
+    const cursorGlow = document.querySelector('.cursor-glow');
+    const cursorPoint = document.querySelector('.cursor-point');
+    document.addEventListener('mousemove', (e) => {
+      cursorGlow.style.left = `${e.clientX}px`;
+      cursorGlow.style.top = `${e.clientY}px`;
+      cursorPoint.style.left = `${e.clientX}px`;
+      cursorPoint.style.top = `${e.clientY}px`;
+    });
   </script>
 
 </body>
 </html>
 '''
 
+
 def load_data():
+    # Create a dummy data file if it doesn't exist
+    if not os.path.exists('website_data.json'):
+        dummy_data = {
+            "artist_name": "Etherea",
+            "artist_icon": "https://placehold.co/32x32/0e0f2c/c1a1ff?text=E",
+            "artist_about": "Etherea is a solo artist crafting ambient soundscapes that blend dreamy synthesizers with organic textures. Inspired by lucid dreams and foggy coastlines, the music invites listeners into a state of reflective tranquility. Each track is a journey through sound, designed to soothe the mind and stir the soul.",
+            "artist_image": "https://placehold.co/400x400/1f1f3c/e6e6ff?text=Etherea",
+            "artist_hero_image": "",
+            "latest_music": {
+                "music_title": "Crystal Caverns by Etherea",
+                "music_url": "https://bandcamp.com",
+                "artwork_url": "https://bandcamp.com/EmbeddedPlayer/track=123456789/size=large/bgcol=333333/linkcol=c1a1ff/tracklist=false/artwork=small/transparent=true/"
+            },
+            "all_music": [
+                {
+                    "music_title": "First Song by Etherea",
+                    "music_url": "https://bandcamp.com",
+                    "artwork_url": "https://bandcamp.com/EmbeddedPlayer/track=111111/size=large/bgcol=333333/linkcol=c1a1ff/tracklist=false/artwork=none/transparent=true/"
+                },
+                {
+                    "music_title": "Second Song by Etherea",
+                    "music_url": "https://bandcamp.com",
+                    "artwork_url": "https://bandcamp.com/EmbeddedPlayer/track=222222/size=large/bgcol=333333/linkcol=c1a1ff/tracklist=false/artwork=none/transparent=true/"
+                },
+                {
+                    "music_title": "Third Song by Etherea",
+                    "music_url": "https://bandcamp.com",
+                    "artwork_url": "https://bandcamp.com/EmbeddedPlayer/track=333333/size=large/bgcol=333333/linkcol=c1a1ff/tracklist=false/artwork=none/transparent=true/"
+                }
+            ],
+            "artist_contact_email": "contact@ethereamusic.com",
+            "contact_info": {
+                "bandcamp": "https://bandcamp.com",
+                "spotify": "https://spotify.com",
+                "instagram": "https://instagram.com",
+                "twitter": "https://twitter.com",
+                "kofi": "https://ko-fi.com"
+            },
+            "copyright_start_year": 2023
+        }
+        with open('website_data.json', 'w') as f:
+            json.dump(dummy_data, f, indent=4)
+
     with open('website_data.json', 'r') as f:
         data = json.load(f)
 
@@ -494,19 +620,21 @@ def load_data():
         data["copyright_string"] = str(current_year)
     return data
 
+
 def render_html(data):
     return render_template_string(html,
-        artist_name=data['artist_name'],
-        artist_about=data['artist_about'],
-        latest_music=data['latest_music'],
-        all_music=data['all_music'],
-        artist_hero_image=data['artist_hero_image'],
-        artist_contact_email=data['artist_contact_email'],
-        artist_links=data['contact_info'],
-        artist_image=data['artist_image'],
-        artist_icon=data['artist_icon'],
-        copyright_string=data.get('copyright_string')
-    )
+      artist_name=data['artist_name'],
+      artist_about=data['artist_about'],
+      latest_music=data['latest_music'],
+      all_music=data['all_music'],
+      artist_hero_image=data['artist_hero_image'],
+      artist_contact_email=data['artist_contact_email'],
+      artist_links=data['contact_info'],
+      artist_image=data['artist_image'],
+      artist_icon=data['artist_icon'],
+      copyright_string=data.get('copyright_string')
+      )
+
 
 def export_static_html():
     data = load_data()
@@ -515,7 +643,8 @@ def export_static_html():
     os.makedirs(output_dir, exist_ok=True)
     with open("./output/music/index.html", "w", encoding="utf-8") as f:
         f.write(rendered)
-    print("Static HTML exported to index.html")
+    print("Static HTML exported to ./output/music/index.html")
+
 
 @app.route('/')
 def home():
@@ -523,5 +652,8 @@ def home():
     data = load_data()
     return render_html(data)
 
+
 if __name__ == '__main__':
+    # Ensure dummy data exists for local execution
+    load_data()
     app.run(debug=True)
