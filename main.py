@@ -354,7 +354,7 @@ template = """
 {% endmacro %}
 
 {% macro skill_item(skill) %}
-    <div class="stagger-item flex flex-col items-center justify-center p-4 rounded-lg shadow-md bg-gray-100 dark:bg-gray-800 text-[var(--color-text-primary)] transform hover:scale-105 transition-transform duration-300">
+    <div class="stagger-item flex flex-col items-center justify-center p-4 rounded-lg shadow-md bg-[var(--color-card-background)] text-[var(--color-text-primary)] transform hover:scale-105 transition-transform duration-300">
         <i class="{{ skill.icon }} text-4xl mb-2 text-[var(--color-accent)]"></i>
         <span>{{ skill.name }}</span>
     </div>
@@ -418,7 +418,7 @@ template = """
             {% for job in group.roles %}
             <li class="stagger-item">
                 <strong class="text-xl text-[var(--color-text-primary)]">{{ job.role }}</strong>
-                <span class="block text-sm text-gray-500 dark:text-gray-400">{{ job.period }}</span>
+                <span class="block text-sm text-[var(--color-text-secondary)]"">{{ job.period }}</span>
                 <p class="mt-1 text-[var(--color-text-secondary)]">{{ job.details }}</p>
             </li>
             {% endfor %}
@@ -451,7 +451,7 @@ template = """
                     {{ nav_link("#certifications", "Certifications") }}
                     {{ nav_link("#contact", "Contact") }}
                 </div>
-                <button onclick="toggleTheme()" aria-label="Toggle Theme" class="px-3 py-2 rounded-md shadow transition-colors duration-300 bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2">
+                <button onclick="toggleTheme()" aria-label="Toggle Theme" class="px-3 py-2 rounded-md shadow transition-colors duration-300 bg-[var(--color-card-background)]-200 text-gray-800 dark:bg-[var(--color-card-background)]-700 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2">
                     <i class="fas fa-moon hidden dark:inline"></i>
                     <i class="fas fa-sun inline dark:hidden"></i>
                 </button>
