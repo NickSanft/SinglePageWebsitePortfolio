@@ -501,20 +501,20 @@ template = """
         </section>
         
         <!-- Certifications Section -->
-        <section id="certifications" class="py-20 bg-gray-50">
+        <section id="certifications" class="py-24 fade-in-section">
             <div class="container mx-auto px-6">
-                <h2 class="text-3xl font-bold text-center text-gray-900 mb-12">Certifications</h2>
+                <h2 class="font-heading text-4xl font-bold mb-12 text-center">Certifications</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
                     {% for cert in certifications %}
-                    <div class="bg-white rounded-xl shadow-md p-8 hover:shadow-xl transition duration-300 border border-gray-100 flex flex-col h-full">
+                    <div class="interactive-card p-6 rounded-lg shadow-lg stagger-item flex flex-col transform hover:-translate-y-1 transition-transform duration-300">
                         <div class="flex-grow">
                             <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-6 text-blue-600">
                                  <i class="fas fa-certificate text-xl"></i>
                             </div>
-                            <h3 class="text-xl font-bold text-gray-900 mb-3">{{ cert.name }}</h3>
-                            <p class="text-gray-600 mb-6 leading-relaxed">{{ cert.description }}</p>
+                            <h3 class="font-heading text-2xl font-bold mb-2">{{ cert.name }}</h3>
+                            <p class="text-[var(--color-text-secondary)] mb-4">{{ cert.description }}</p>
                         </div>
-                        <div class="mt-auto">
+                        <div class="flex flex-wrap gap-2 mb-4">
                             <a href="{{ cert.link }}" target="_blank" class="inline-flex items-center text-blue-600 font-semibold hover:text-blue-800 transition group">
                                 View Credential 
                                 <i class="fas fa-external-link-alt ml-2 text-xs group-hover:translate-x-1 transition-transform"></i>
