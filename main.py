@@ -447,8 +447,8 @@ template = """
                     {{ nav_link("#about", "About") }}
                     {{ nav_link("#experience", "Experience") }}
                     {{ nav_link("#skills", "Skills") }}
+                    {{ nav_link("#certifications", "Certifications") }}                    
                     {{ nav_link("#projects", "Projects") }}
-                    {{ nav_link("#certifications", "Certifications") }}
                     {{ nav_link("#contact", "Contact") }}
                 </div>
                 <button onclick="toggleTheme()" aria-label="Toggle Theme" class="px-3 py-2 rounded-md shadow transition-colors duration-300 bg-[var(--color-card-background)]-200 text-gray-800 dark:bg-[var(--color-card-background)]-700 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2">
