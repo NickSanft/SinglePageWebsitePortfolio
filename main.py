@@ -149,6 +149,7 @@ template = """
     <title>{{ website_title }}</title>
     <script src="/static/tailwindcss.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <link rel="icon" href="/static/icon.png" type="image/x-icon">
     <link rel="stylesheet" href="/static/fontawesome-free-6.4.0-web/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -552,19 +553,7 @@ template = """
         </section>
     </main>
 
-    <footer id="contact" class="py-24 bg-gray-100 dark:bg-gray-800 fade-in-section">
-        <div class="max-w-4xl mx-auto px-4 text-center">
-            <h2 class="font-heading text-3xl font-bold mb-4">Contact</h2>
-            <p class="mb-6 text-[var(--color-text-secondary)]">Feel free to connect with me!</p>
-            <div class="flex justify-center space-x-6">
-                {{ social_link(contact_info.github_url, "GitHub", "fab fa-github") }}
-                {{ social_link(contact_info.linkedin_url, "LinkedIn", "fab fa-linkedin") }}
-                {{ social_link(contact_info.bandcamp_url, "Bandcamp", "fab fa-bandcamp") }}
-                {{ social_link(contact_info.kofi_url, "Ko-fi", "fas fa-coffee") }}
-            </div>
-            <p class="mt-8 text-sm text-gray-500 dark:text-gray-400">&copy; {{ copyright_string }} {{ copyright_name }}</p>
-        </div>
-    </footer>
+
 
 <script>
 function initSectionReordering() {
