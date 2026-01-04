@@ -94,6 +94,23 @@ def load_data():
                 {"name": "Git", "icon": "fab fa-git-alt"},
                 {"name": "Cloud Computing", "icon": "fas fa-cloud"}
             ],
+            "certifications": [
+                {
+                    "name": "AWS Certified Solutions Architect",
+                    "description": "Validated expertise in designing distributed systems on AWS.",
+                    "link": "https://aws.amazon.com/certification/"
+                },
+                {
+                    "name": "Professional Data Engineer",
+                    "description": "Demonstrated proficiency in data processing systems and machine learning models.",
+                    "link": "https://cloud.google.com/certification/data-engineer"
+                },
+                {
+                    "name": "Meta Back-End Developer",
+                    "description": "Comprehensive course covering Python, Django, APIs, and database management.",
+                    "link": "https://www.coursera.org/"
+                }
+            ],
             "contact_info": {
                 "github_url": "https://github.com/yourusername",
                 "linkedin_url": "https://linkedin.com/in/yourusername",
@@ -431,6 +448,7 @@ template = """
                     {{ nav_link("#experience", "Experience") }}
                     {{ nav_link("#skills", "Skills") }}
                     {{ nav_link("#projects", "Projects") }}
+                    {{ nav_link("#certifications", "Certifications") }}
                     {{ nav_link("#contact", "Contact") }}
                 </div>
                 <button onclick="toggleTheme()" aria-label="Toggle Theme" class="px-3 py-2 rounded-md shadow transition-colors duration-300 bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2">
@@ -481,6 +499,32 @@ template = """
                 </div>
             </div>
         </section>
+        
+        <!-- Certifications Section -->
+        <section id="certifications" class="py-20 bg-gray-50">
+            <div class="container mx-auto px-6">
+                <h2 class="text-3xl font-bold text-center text-gray-900 mb-12">Certifications</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                    {% for cert in certifications %}
+                    <div class="bg-white rounded-xl shadow-md p-8 hover:shadow-xl transition duration-300 border border-gray-100 flex flex-col h-full">
+                        <div class="flex-grow">
+                            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-6 text-blue-600">
+                                 <i class="fas fa-certificate text-xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-3">{{ cert.name }}</h3>
+                            <p class="text-gray-600 mb-6 leading-relaxed">{{ cert.description }}</p>
+                        </div>
+                        <div class="mt-auto">
+                            <a href="{{ cert.link }}" target="_blank" class="inline-flex items-center text-blue-600 font-semibold hover:text-blue-800 transition group">
+                                View Credential 
+                                <i class="fas fa-external-link-alt ml-2 text-xs group-hover:translate-x-1 transition-transform"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>        
 
         <section id="projects" class="py-24 fade-in-section">
             <div class="max-w-5xl mx-auto">
