@@ -2,6 +2,8 @@
 
 This is the actual code behind my website - https://nick.sanft.com/
 
+This was a project to have a full portfolio website all contained within a single Python script.
+
 ## Use
 
 - Download this and run website.py to generate the base website_data.json file.
