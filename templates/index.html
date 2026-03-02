@@ -9,6 +9,7 @@
     <meta property="og:description" content="{{ about_me[:160] }}">
     <meta property="og:image" content="{{ hero_image_url }}">
     <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ site_url | default('') }}">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{{ website_title }}">
     <meta name="twitter:description" content="{{ about_me[:160] }}">
@@ -108,6 +109,8 @@
             document.getElementById('back-to-top-btn').addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); });
 
             initSectionReordering();
+            initTypewriter();
+            initActiveNavHighlight();
 
             // Close mobile menu when a nav link is clicked
             document.getElementById('mobile-menu').addEventListener('click', (e) => {
@@ -199,6 +202,24 @@
         .nav-link:hover::after {
             transform: scaleX(1);
         }
+        .nav-link.nav-link-active {
+            color: var(--color-accent);
+        }
+        .nav-link.nav-link-active::after {
+            transform: scaleX(1);
+        }
+        .typed-cursor {
+            display: inline-block;
+            font-weight: 300;
+            animation: blink-caret 0.7s step-end infinite;
+        }
+        @keyframes blink-caret {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .typed-cursor { animation: none; }
+        }
     </style>
 </head>
 <body class="bg-[var(--color-background)] text-[var(--color-text-primary)] font-sans">
@@ -206,7 +227,7 @@
 {# === MACRO DEFINITIONS === #}
 
 {% macro nav_link(href, text) %}
-    <a href="{{ href }}" class="nav-link hover:text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded">{{ text }}</a>
+    <a href="{{ href }}" data-section="{{ href[1:] }}" class="nav-link hover:text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded">{{ text }}</a>
 {% endmacro %}
 
 {% macro skill_item(skill) %}
@@ -333,7 +354,9 @@
             <div class="max-w-6xl mx-auto flex flex-col-reverse md:flex-row items-center justify-center gap-10 md:gap-16">
                 <div class="text-center md:text-left stagger-item">
                     <h1 class="font-heading text-4xl md:text-6xl font-bold mb-2 text-[var(--color-text-primary)]">{{ hero_title }}</h1>
-                    <p class="font-heading text-xl md:text-2xl text-[var(--color-accent)] font-semibold mb-6">{{ hero_subtitle }}</p>
+                    <p class="font-heading text-xl md:text-2xl text-[var(--color-accent)] font-semibold mb-6" aria-label="{{ hero_subtitle }}">
+                        <span id="typed-subtitle" data-text="{{ hero_subtitle }}"></span><span id="typed-cursor" class="typed-cursor" aria-hidden="true">|</span>
+                    </p>
                     <p class="text-lg text-[var(--color-text-secondary)] max-w-2xl mb-8">{{ about_me }}</p>
                     {% if contact_info.resume_url %}
                     <a href="{{ contact_info.resume_url }}" target="_blank" class="inline-block px-6 py-3 rounded-lg bg-[var(--color-accent)] text-white font-semibold hover:bg-[var(--color-accent-hover)] transition-colors duration-300 shadow-lg">
@@ -688,6 +711,47 @@ function setMode(mode) {
   }
   applySavedThemeColors();
   updatePickers();
+}
+
+function initTypewriter() {
+  const el = document.getElementById('typed-subtitle');
+  const cursor = document.getElementById('typed-cursor');
+  if (!el) return;
+  const text = el.dataset.text;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    el.textContent = text;
+    cursor.remove();
+    return;
+  }
+  let i = 0;
+  function type() {
+    if (i < text.length) {
+      el.textContent += text.charAt(i++);
+      setTimeout(type, 45);
+    } else {
+      setTimeout(() => { cursor.style.transition = 'opacity 0.5s'; cursor.style.opacity = '0'; }, 2000);
+    }
+  }
+  setTimeout(type, 400);
+}
+
+function initActiveNavHighlight() {
+  const navLinks = document.querySelectorAll('.nav-link[data-section]');
+  if (!navLinks.length) return;
+
+  const setActive = (id) => {
+    navLinks.forEach(link => {
+      link.classList.toggle('nav-link-active', link.dataset.section === id);
+    });
+  };
+
+  const sectionObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) setActive(entry.target.id);
+    });
+  }, { rootMargin: '-20% 0px -75% 0px' });
+
+  document.querySelectorAll('main section[id]').forEach(s => sectionObserver.observe(s));
 }
 
 function toggleMobileMenu() {
