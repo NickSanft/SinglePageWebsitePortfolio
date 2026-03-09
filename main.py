@@ -1,4 +1,4 @@
-from flask import Flask, render_template, send_from_directory
+from flask import Flask, render_template, send_from_directory, Response
 import os
 import json
 import datetime
@@ -159,7 +159,19 @@ def load_data():
 @app.route("/")
 def serve_index():
     data = load_data()
-    return render_template('index.html', static_root="/static/", **data)
+    return render_template('index.html', static_root="/static/", pdf_url="/resume.pdf", **data)
+
+
+@app.route("/resume.pdf")
+def serve_resume():
+    from resume import generate_pdf, _load_data
+    data = _load_data()
+    pdf_bytes = generate_pdf(data)
+    return Response(
+        pdf_bytes,
+        mimetype="application/pdf",
+        headers={"Content-Disposition": "inline; filename=resume.pdf"},
+    )
 
 
 @app.route('/<path:path>')
@@ -223,11 +235,22 @@ def write_static_html():
             print(f"Error downloading Sortable.min.js: {e}")
 
     data = load_data()
-    rendered_for_file = render_template('index.html', static_root="static/", **data)
+    rendered_for_file = render_template('index.html', static_root="static/", pdf_url="resume.pdf", **data)
 
     index_path = os.path.join(output_dir, "index.html")
     with open(index_path, "w", encoding="utf-8") as f:
         f.write(rendered_for_file)
+
+    # Export resume PDF
+    try:
+        from resume import generate_pdf
+        pdf_bytes = generate_pdf(data)
+        pdf_path = os.path.join(output_dir, "resume.pdf")
+        with open(pdf_path, "wb") as f:
+            f.write(pdf_bytes)
+        print("resume.pdf written to output/")
+    except Exception as e:
+        print(f"Warning: could not generate resume.pdf — {e}")
 
 
 if __name__ == "__main__":
