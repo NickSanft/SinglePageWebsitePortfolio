@@ -47,6 +47,10 @@
         function toggleTheme() {
             document.documentElement.classList.toggle('dark');
             localStorage.theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+            const colorVars = ['--color-background', '--color-text-primary', '--color-text-secondary', '--color-card-background', '--color-accent', '--color-accent-hover'];
+            colorVars.forEach(v => document.documentElement.style.removeProperty(v));
+            applySavedThemeColors();
+            updatePickers();
         }
 
         function applyInteractiveCardEffect() {
