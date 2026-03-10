@@ -68,6 +68,8 @@
             applySavedThemeColors();
             updatePickers();
             syncLivePreviews();
+            updateCodeViewer();
+            updateWCAG();
         }
 
         function applyInteractiveCardEffect() {
@@ -143,6 +145,8 @@
             initSectionReordering();
             initTypewriter();
             initActiveNavHighlight();
+            updateCodeViewer();
+            updateWCAG();
 
             // Close mobile menu when a nav link is clicked
             document.getElementById('mobile-menu').addEventListener('click', (e) => {
@@ -580,6 +584,34 @@
             <h2 class="font-heading text-4xl font-bold mb-4">{{ sandbox_title }}</h2>
             <p class="max-w-3xl mx-auto mb-8 text-[var(--color-text-secondary)]">{{ sandbox_description }}</p>
 
+            <div class="p-8 rounded-lg bg-[var(--color-card-background)] shadow-inner mb-8">
+                <h3 class="font-heading text-2xl font-semibold mb-1 text-center">Theme Presets</h3>
+                <p class="text-sm text-[var(--color-text-secondary)] mb-6 text-center">Apply a full color scheme instantly — works for both light and dark mode independently.</p>
+                <div class="flex flex-wrap justify-center gap-3">
+                    <button onclick="applyPreset('Default')" data-preset="Default" class="preset-btn flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 border-transparent bg-[var(--color-background)] hover:border-[var(--color-accent)] transition-all font-semibold text-sm text-[var(--color-text-primary)]">
+                        <span class="flex gap-1"><span class="w-3 h-3 rounded-full" style="background:#3b82f6"></span><span class="w-3 h-3 rounded-full" style="background:#f9fafb"></span></span>Default
+                    </button>
+                    <button onclick="applyPreset('Ocean')" data-preset="Ocean" class="preset-btn flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 border-transparent bg-[var(--color-background)] hover:border-[var(--color-accent)] transition-all font-semibold text-sm text-[var(--color-text-primary)]">
+                        <span class="flex gap-1"><span class="w-3 h-3 rounded-full" style="background:#0284c7"></span><span class="w-3 h-3 rounded-full" style="background:#f0f9ff"></span></span>Ocean
+                    </button>
+                    <button onclick="applyPreset('Forest')" data-preset="Forest" class="preset-btn flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 border-transparent bg-[var(--color-background)] hover:border-[var(--color-accent)] transition-all font-semibold text-sm text-[var(--color-text-primary)]">
+                        <span class="flex gap-1"><span class="w-3 h-3 rounded-full" style="background:#16a34a"></span><span class="w-3 h-3 rounded-full" style="background:#f0fdf4"></span></span>Forest
+                    </button>
+                    <button onclick="applyPreset('Sunset')" data-preset="Sunset" class="preset-btn flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 border-transparent bg-[var(--color-background)] hover:border-[var(--color-accent)] transition-all font-semibold text-sm text-[var(--color-text-primary)]">
+                        <span class="flex gap-1"><span class="w-3 h-3 rounded-full" style="background:#ea580c"></span><span class="w-3 h-3 rounded-full" style="background:#fff7ed"></span></span>Sunset
+                    </button>
+                    <button onclick="applyPreset('Amethyst')" data-preset="Amethyst" class="preset-btn flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 border-transparent bg-[var(--color-background)] hover:border-[var(--color-accent)] transition-all font-semibold text-sm text-[var(--color-text-primary)]">
+                        <span class="flex gap-1"><span class="w-3 h-3 rounded-full" style="background:#9333ea"></span><span class="w-3 h-3 rounded-full" style="background:#faf5ff"></span></span>Amethyst
+                    </button>
+                    <button onclick="applyPreset('Rose')" data-preset="Rose" class="preset-btn flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 border-transparent bg-[var(--color-background)] hover:border-[var(--color-accent)] transition-all font-semibold text-sm text-[var(--color-text-primary)]">
+                        <span class="flex gap-1"><span class="w-3 h-3 rounded-full" style="background:#e11d48"></span><span class="w-3 h-3 rounded-full" style="background:#fff1f2"></span></span>Rose
+                    </button>
+                    <button onclick="applyPreset('Mono')" data-preset="Mono" class="preset-btn flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 border-transparent bg-[var(--color-background)] hover:border-[var(--color-accent)] transition-all font-semibold text-sm text-[var(--color-text-primary)]">
+                        <span class="flex gap-1"><span class="w-3 h-3 rounded-full" style="background:#111111"></span><span class="w-3 h-3 rounded-full" style="background:#fafafa"></span></span>Mono
+                    </button>
+                </div>
+            </div>
+
             <div class="grid md:grid-cols-2 gap-12 text-left p-8 rounded-lg bg-[var(--color-card-background)] shadow-inner mb-8">
                 <div>
                     <h3 class="font-heading text-2xl font-semibold mb-4 text-center md:text-left">Customize Theme</h3>
@@ -704,6 +736,23 @@
                             {% if contact_info.linkedin_url %}<a href="{{ contact_info.linkedin_url }}" target="_blank" class="flex flex-col items-center gap-1 p-3 rounded-lg hover:bg-[var(--color-background)] transition-colors" aria-label="LinkedIn"><i class="fab fa-linkedin text-xl text-[var(--color-accent)]"></i><span class="text-xs text-[var(--color-text-secondary)]">LinkedIn</span></a>{% endif %}
                             {% if contact_info.bandcamp_url %}<a href="{{ contact_info.bandcamp_url }}" target="_blank" class="flex flex-col items-center gap-1 p-3 rounded-lg hover:bg-[var(--color-background)] transition-colors" aria-label="Bandcamp"><i class="fab fa-bandcamp text-xl text-[var(--color-accent)]"></i><span class="text-xs text-[var(--color-text-secondary)]">Bandcamp</span></a>{% endif %}
                             {% if contact_info.kofi_url %}<a href="{{ contact_info.kofi_url }}" target="_blank" class="flex flex-col items-center gap-1 p-3 rounded-lg hover:bg-[var(--color-background)] transition-colors" aria-label="Ko-fi"><i class="fas fa-mug-hot text-xl text-[var(--color-accent)]"></i><span class="text-xs text-[var(--color-text-secondary)]">Ko-fi</span></a>{% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-12 text-left p-8 rounded-lg bg-[var(--color-card-background)] shadow-inner mt-8">
+                <div>
+                    <h3 class="font-heading text-2xl font-semibold mb-1 text-center md:text-left">Under the Hood</h3>
+                    <p class="text-sm text-[var(--color-text-secondary)] mb-4">Live CSS output — every control you change writes real properties to the document.</p>
+                    <pre id="code-viewer" class="rounded-lg p-4 text-xs font-mono leading-relaxed overflow-x-auto text-left" style="background:#0f172a;color:#e2e8f0;min-height:10rem;white-space:pre-wrap;word-break:break-all;">/* Adjust any control to see live CSS output */</pre>
+                </div>
+                <div>
+                    <h3 class="font-heading text-2xl font-semibold mb-1 text-center md:text-left">Accessibility Check</h3>
+                    <p class="text-sm text-[var(--color-text-secondary)] mb-4">WCAG contrast ratios for your current color scheme. AA requires 4.5:1, AAA requires 7:1.</p>
+                    <div id="wcag-results" class="space-y-3">
+                        <div class="flex items-center justify-between p-3 rounded-lg" style="background:var(--color-background)">
+                            <span class="text-sm font-medium text-[var(--color-text-secondary)]">Loading...</span>
                         </div>
                     </div>
                 </div>
@@ -855,6 +904,159 @@ function applySectionOrder(order) {
     });
 }
 
+// ── Theme Presets ──────────────────────────────────────────────────
+const THEME_PRESETS = {
+  Default: {
+    light: { '--color-background':'#f9fafb','--color-text-primary':'#111827','--color-text-secondary':'#4b5563','--color-card-background':'#ffffff','--color-accent':'#3b82f6','--color-accent-hover':'#2563eb' },
+    dark:  { '--color-background':'#111827','--color-text-primary':'#f9fafb','--color-text-secondary':'#d1d5db','--color-card-background':'#1f2937','--color-accent':'#60a5fa','--color-accent-hover':'#3b82f6' }
+  },
+  Ocean: {
+    light: { '--color-background':'#f0f9ff','--color-text-primary':'#0c4a6e','--color-text-secondary':'#0369a1','--color-card-background':'#ffffff','--color-accent':'#0284c7','--color-accent-hover':'#0369a1' },
+    dark:  { '--color-background':'#0c1a2e','--color-text-primary':'#e0f2fe','--color-text-secondary':'#7dd3fc','--color-card-background':'#0f2744','--color-accent':'#38bdf8','--color-accent-hover':'#0ea5e9' }
+  },
+  Forest: {
+    light: { '--color-background':'#f0fdf4','--color-text-primary':'#14532d','--color-text-secondary':'#15803d','--color-card-background':'#ffffff','--color-accent':'#16a34a','--color-accent-hover':'#15803d' },
+    dark:  { '--color-background':'#0a1a0e','--color-text-primary':'#dcfce7','--color-text-secondary':'#86efac','--color-card-background':'#0f2916','--color-accent':'#4ade80','--color-accent-hover':'#22c55e' }
+  },
+  Sunset: {
+    light: { '--color-background':'#fff7ed','--color-text-primary':'#7c2d12','--color-text-secondary':'#c2410c','--color-card-background':'#ffffff','--color-accent':'#ea580c','--color-accent-hover':'#c2410c' },
+    dark:  { '--color-background':'#1c0a00','--color-text-primary':'#ffedd5','--color-text-secondary':'#fed7aa','--color-card-background':'#2d1100','--color-accent':'#fb923c','--color-accent-hover':'#f97316' }
+  },
+  Amethyst: {
+    light: { '--color-background':'#faf5ff','--color-text-primary':'#3b0764','--color-text-secondary':'#7e22ce','--color-card-background':'#ffffff','--color-accent':'#9333ea','--color-accent-hover':'#7e22ce' },
+    dark:  { '--color-background':'#0d0118','--color-text-primary':'#f3e8ff','--color-text-secondary':'#d8b4fe','--color-card-background':'#1a0530','--color-accent':'#c084fc','--color-accent-hover':'#a855f7' }
+  },
+  Rose: {
+    light: { '--color-background':'#fff1f2','--color-text-primary':'#881337','--color-text-secondary':'#be123c','--color-card-background':'#ffffff','--color-accent':'#e11d48','--color-accent-hover':'#be123c' },
+    dark:  { '--color-background':'#1a000a','--color-text-primary':'#ffe4e6','--color-text-secondary':'#fda4af','--color-card-background':'#2d0112','--color-accent':'#fb7185','--color-accent-hover':'#f43f5e' }
+  },
+  Mono: {
+    light: { '--color-background':'#fafafa','--color-text-primary':'#111111','--color-text-secondary':'#555555','--color-card-background':'#ffffff','--color-accent':'#111111','--color-accent-hover':'#333333' },
+    dark:  { '--color-background':'#0a0a0a','--color-text-primary':'#f5f5f5','--color-text-secondary':'#a0a0a0','--color-card-background':'#1a1a1a','--color-accent':'#e5e5e5','--color-accent-hover':'#d4d4d4' }
+  },
+};
+
+function applyPreset(name) {
+  const preset = THEME_PRESETS[name];
+  if (!preset) return;
+  const mode = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+  const colors = preset[mode];
+  const colorVars = ['--color-background','--color-text-primary','--color-text-secondary','--color-card-background','--color-accent','--color-accent-hover'];
+  colorVars.forEach(v => document.documentElement.style.removeProperty(v));
+  Object.entries(colors).forEach(([v, val]) => {
+    document.documentElement.style.setProperty(v, val);
+    saveThemeColor(v, val);
+  });
+  updatePickers();
+  syncLivePreviews();
+  updateCodeViewer();
+  updateWCAG();
+  document.querySelectorAll('.preset-btn').forEach(btn => {
+    const active = btn.dataset.preset === name;
+    btn.style.borderColor = active ? 'var(--color-accent)' : 'transparent';
+    btn.style.boxShadow  = active ? '0 0 0 2px var(--color-accent)' : '';
+  });
+}
+
+// ── Code Viewer ────────────────────────────────────────────────────
+function updateCodeViewer() {
+  const el = document.getElementById('code-viewer');
+  if (!el) return;
+  const mode = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+  const allVars = [
+    '--color-background','--color-text-primary','--color-text-secondary',
+    '--color-card-background','--color-accent','--color-accent-hover',
+    '--card-radius','--spotlight-size',
+  ];
+  const computed = getComputedStyle(document.documentElement);
+  const lines = allVars.map(v => {
+    const val = computed.getPropertyValue(v).trim();
+    if (!val) return null;
+    return `  <span style="color:#94a3b8">${v}</span>: <span style="color:#86efac">${val}</span>;`;
+  }).filter(Boolean);
+
+  const fontOverride = document.body.style.fontFamily;
+  if (fontOverride) lines.push(`  <span style="color:#94a3b8">font-family</span>: <span style="color:#86efac">${fontOverride}</span>;`);
+  const fontSizeOverride = document.documentElement.style.fontSize;
+  if (fontSizeOverride) lines.push(`  <span style="color:#94a3b8">font-size</span>: <span style="color:#86efac">${fontSizeOverride}</span>;`);
+
+  el.innerHTML =
+    `<span style="color:#7dd3fc">/* ${mode} mode — live overrides */</span>\n` +
+    `<span style="color:#f472b6">:root</span> {\n` +
+    (lines.length ? lines.join('\n') : `  <span style="color:#475569">/* no overrides yet */</span>`) +
+    `\n}`;
+}
+
+// ── WCAG Contrast Checker ──────────────────────────────────────────
+function hexToRgb(hex) {
+  hex = hex.trim().replace(/^#/, '');
+  if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+  const n = parseInt(hex, 16);
+  return [n >> 16 & 255, n >> 8 & 255, n & 255];
+}
+
+function relativeLuminance([r, g, b]) {
+  return [r, g, b].map(c => {
+    c /= 255;
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  }).reduce((sum, c, i) => sum + c * [0.2126, 0.7152, 0.0722][i], 0);
+}
+
+function contrastRatio(hex1, hex2) {
+  const l1 = relativeLuminance(hexToRgb(hex1));
+  const l2 = relativeLuminance(hexToRgb(hex2));
+  const lighter = Math.max(l1, l2), darker = Math.min(l1, l2);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+function cssVarToHex(v) {
+  // Read the computed value; if it's already a hex return it, else try to parse rgb()
+  const raw = getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  if (/^#[0-9a-f]{3,6}$/i.test(raw)) return raw;
+  const rgb = raw.match(/\d+/g);
+  if (rgb && rgb.length >= 3) {
+    return '#' + rgb.slice(0,3).map(n => parseInt(n).toString(16).padStart(2,'0')).join('');
+  }
+  return '#808080'; // fallback
+}
+
+function wcagBadge(ratio) {
+  const r = Math.round(ratio * 100) / 100;
+  const aaPass  = ratio >= 4.5;
+  const aaaPass = ratio >= 7;
+  const badge = (pass, label) =>
+    `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ml-1 ${pass ? 'bg-green-500 text-white' : 'bg-red-400 text-white'}">${pass ? '✓' : '✗'} ${label}</span>`;
+  return `<span class="font-mono font-bold">${r}:1</span>${badge(aaPass,'AA')}${badge(aaaPass,'AAA')}`;
+}
+
+function updateWCAG() {
+  const el = document.getElementById('wcag-results');
+  if (!el) return;
+  const bg   = cssVarToHex('--color-background');
+  const card = cssVarToHex('--color-card-background');
+  const txt  = cssVarToHex('--color-text-primary');
+  const sec  = cssVarToHex('--color-text-secondary');
+  const acc  = cssVarToHex('--color-accent');
+
+  const pairs = [
+    { label: 'Primary text on background',  fg: txt, bg: bg   },
+    { label: 'Secondary text on background', fg: sec, bg: bg  },
+    { label: 'Primary text on card',         fg: txt, bg: card },
+    { label: 'Accent on background',         fg: acc, bg: bg  },
+  ];
+
+  el.innerHTML = pairs.map(({ label, fg, bg: bgc }) => {
+    const ratio = contrastRatio(fg, bgc);
+    return `<div class="flex items-center justify-between p-3 rounded-lg gap-2" style="background:var(--color-background);border:1px solid rgba(128,128,128,0.15)">
+      <div class="flex items-center gap-2 min-w-0">
+        <span class="w-4 h-4 rounded-full flex-shrink-0 border border-gray-300" style="background:${fg}"></span>
+        <span class="text-xs text-[var(--color-text-secondary)] truncate">${label}</span>
+      </div>
+      <div class="text-xs flex-shrink-0">${wcagBadge(ratio)}</div>
+    </div>`;
+  }).join('');
+}
+
 function setFontFamily(family) {
     document.body.style.fontFamily = `'${family}', sans-serif`;
 }
@@ -980,6 +1182,13 @@ function resetAllCustomizations() {
     btn.classList.toggle('text-[var(--color-accent)]', btn.dataset.border !== 'solid');
   });
 
+  document.querySelectorAll('.preset-btn').forEach(btn => {
+    btn.style.borderColor = '';
+    btn.style.boxShadow = '';
+  });
+  updateCodeViewer();
+  updateWCAG();
+
   // Add flash effect for visual feedback
   const playControls = document.getElementById('play-controls');
   playControls.classList.add('animate-flash');
@@ -1004,6 +1213,8 @@ function updateColor(cssVar, value) {
   document.documentElement.style.setProperty(cssVar, value);
   saveThemeColor(cssVar, value);
   syncLivePreviews();
+  updateCodeViewer();
+  updateWCAG();
 }
 
 function saveThemeColor(cssVar, value) {
@@ -1063,6 +1274,8 @@ function setMode(mode) {
   applySavedThemeColors();
   updatePickers();
   syncLivePreviews();
+  updateCodeViewer();
+  updateWCAG();
 }
 
 function initTypewriter() {
