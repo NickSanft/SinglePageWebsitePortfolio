@@ -19,7 +19,7 @@
     <link rel="stylesheet" href="{{ static_root }}fontawesome-free-6.4.0-web/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@600;700&family=Roboto:wght@400;600;700&family=Lato:wght@400;700&family=Merriweather:wght@400;700&family=Playfair+Display:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -308,6 +308,12 @@
         .dark .skill-bar-track { background: rgba(255,255,255,0.12); }
         .skill-bar-fill { height: 100%; width: 0%; border-radius: 9999px; background: var(--color-accent); transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); }
         @media (prefers-reduced-motion: reduce) { .skill-bar-fill { transition: none !important; } }
+        .interactive-card { border-radius: var(--card-radius, 0.5rem) !important; }
+        html.anim-fast * { transition-duration: 0.08s !important; animation-duration: 0.15s !important; }
+        html.anim-slow * { transition-duration: 1.8s !important; animation-duration: 3.5s !important; }
+        html.anim-none * { transition: none !important; animation: none !important; }
+        .sandbox-anim-btn { transition: background-color 0.2s, color 0.2s; }
+        .sandbox-anim-btn.active { background-color: var(--color-accent); color: white; }
     </style>
 </head>
 <body class="bg-[var(--color-background)] text-[var(--color-text-primary)] font-sans">
@@ -570,10 +576,11 @@
         </section>
 
         <section id="play" class="py-24 px-4 fade-in-section">
-          <div id="play-controls" class="max-w-4xl mx-auto text-center">
+          <div id="play-controls" class="max-w-5xl mx-auto text-center">
             <h2 class="font-heading text-4xl font-bold mb-4">{{ sandbox_title }}</h2>
             <p class="max-w-3xl mx-auto mb-8 text-[var(--color-text-secondary)]">{{ sandbox_description }}</p>
-            <div class="grid md:grid-cols-2 gap-12 text-left p-8 rounded-lg bg-[var(--color-card-background)] shadow-inner">
+
+            <div class="grid md:grid-cols-2 gap-12 text-left p-8 rounded-lg bg-[var(--color-card-background)] shadow-inner mb-8">
                 <div>
                     <h3 class="font-heading text-2xl font-semibold mb-4 text-center md:text-left">Customize Theme</h3>
                     <p class="mb-4 text-[var(--color-text-secondary)]">Choose your own theme colors below. Your changes will apply separately for light and dark mode and be saved locally.</p>
@@ -616,12 +623,99 @@
                         <li data-section-id="skills" tabindex="0" aria-roledescription="Draggable section" aria-grabbed="false" class="p-3 rounded-lg shadow-md cursor-grab bg-gray-100 dark:bg-gray-800 text-[var(--color-text-primary)] flex items-center focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"><i class="fas fa-grip-vertical mr-3 text-gray-400"></i>Skills</li>
                         <li data-section-id="certifications" tabindex="0" aria-roledescription="Draggable section" aria-grabbed="false" class="p-3 rounded-lg shadow-md cursor-grab bg-gray-100 dark:bg-gray-800 text-[var(--color-text-primary)] flex items-center focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"><i class="fas fa-grip-vertical mr-3 text-gray-400"></i>Certifications</li>
                         <li data-section-id="projects" tabindex="0" aria-roledescription="Draggable section" aria-grabbed="false" class="p-3 rounded-lg shadow-md cursor-grab bg-gray-100 dark:bg-gray-800 text-[var(--color-text-primary)] flex items-center focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"><i class="fas fa-grip-vertical mr-3 text-gray-400"></i>Projects</li>
-                        <li data-section-id="play" tabindex="0" aria-roledescription="Draggable section" aria-grabbed="false" class="p-3 rounded-lg shadow-md cursor-grab bg-gray-100 dark:bg-gray-800 text-[var(--color-text-primary)] flex items-center focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"><i class="fas fa-grip-vertical mr-3 text-gray-400"></i>Play Section</li>
+                        <li data-section-id="contact" tabindex="0" aria-roledescription="Draggable section" aria-grabbed="false" class="p-3 rounded-lg shadow-md cursor-grab bg-gray-100 dark:bg-gray-800 text-[var(--color-text-primary)] flex items-center focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"><i class="fas fa-grip-vertical mr-3 text-gray-400"></i>Contact</li>
+                        <li data-section-id="play" tabindex="0" aria-roledescription="Draggable section" aria-grabbed="false" class="p-3 rounded-lg shadow-md cursor-grab bg-gray-100 dark:bg-gray-800 text-[var(--color-text-primary)] flex items-center focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"><i class="fas fa-grip-vertical mr-3 text-gray-400"></i>Sandbox</li>
                     </ol>
                 </div>
             </div>
-            <div class="mt-12">
-                <button onclick="resetAllCustomizations()" class="px-6 py-3 rounded-lg bg-red-500 text-white hover:bg-red-600 font-semibold">Reset All Customizations</button>
+
+            <div class="grid md:grid-cols-2 gap-12 text-left p-8 rounded-lg bg-[var(--color-card-background)] shadow-inner">
+                <div>
+                    <h3 class="font-heading text-2xl font-semibold mb-4 text-center md:text-left">Typography</h3>
+                    <div class="mb-6">
+                        <label class="block mb-2 font-semibold" for="fontFamilySelect">Body Font</label>
+                        <select id="fontFamilySelect" onchange="setFontFamily(this.value)" class="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-600 cursor-pointer">
+                            <option value="Inter">Inter (Default)</option>
+                            <option value="Roboto">Roboto</option>
+                            <option value="Lato">Lato</option>
+                            <option value="Merriweather">Merriweather</option>
+                            <option value="Playfair Display">Playfair Display</option>
+                            <option value="Space Mono">Space Mono</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block mb-2 font-semibold" for="fontScaleRange">Font Size: <span id="fontScaleValue">100</span>%</label>
+                        <input type="range" id="fontScaleRange" min="80" max="120" value="100" step="5" class="w-full cursor-pointer" oninput="setFontScale(this.value)">
+                    </div>
+                </div>
+                <div>
+                    <h3 class="font-heading text-2xl font-semibold mb-4 text-center md:text-left">Visual Style</h3>
+                    <div class="mb-6">
+                        <label class="block mb-2 font-semibold" for="cardRadiusRange">Card Corners: <span id="cardRadiusValue">8</span>px</label>
+                        <input type="range" id="cardRadiusRange" min="0" max="32" value="8" step="4" class="w-full cursor-pointer" oninput="setCardRadius(this.value)">
+                    </div>
+                    <div>
+                        <label class="block mb-2 font-semibold">Animation Speed</label>
+                        <div class="flex gap-2 flex-wrap mt-1">
+                            <button onclick="setAnimSpeed('none')" class="sandbox-anim-btn px-4 py-1.5 rounded-lg text-sm border border-[var(--color-accent)] text-[var(--color-accent)]" data-speed="none">Off</button>
+                            <button onclick="setAnimSpeed('slow')" class="sandbox-anim-btn px-4 py-1.5 rounded-lg text-sm border border-[var(--color-accent)] text-[var(--color-accent)]" data-speed="slow">Slow</button>
+                            <button onclick="setAnimSpeed('normal')" class="sandbox-anim-btn active px-4 py-1.5 rounded-lg text-sm border border-[var(--color-accent)]" data-speed="normal">Normal</button>
+                            <button onclick="setAnimSpeed('fast')" class="sandbox-anim-btn px-4 py-1.5 rounded-lg text-sm border border-[var(--color-accent)] text-[var(--color-accent)]" data-speed="fast">Fast</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-12 text-left p-8 rounded-lg bg-[var(--color-card-background)] shadow-inner mt-8">
+                <div>
+                    <h3 class="font-heading text-2xl font-semibold mb-4 text-center md:text-left">Advanced Effects</h3>
+                    <div class="mb-6">
+                        <label class="block mb-2 font-semibold" for="spotlightSizeRange">Spotlight Size: <span id="spotlightSizeValue">400</span>px</label>
+                        <input type="range" id="spotlightSizeRange" min="100" max="800" value="400" step="50" class="w-full cursor-pointer" oninput="setSpotlightSize(this.value)">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block mb-2 font-semibold" for="cardShadowRange">Card Shadow: <span id="cardShadowValue">Medium</span></label>
+                        <input type="range" id="cardShadowRange" min="0" max="3" value="1" step="1" class="w-full cursor-pointer" oninput="setCardShadow(this.value)">
+                    </div>
+                    <div>
+                        <label class="block mb-2 font-semibold">Card Border</label>
+                        <div class="flex gap-2 flex-wrap mt-1">
+                            <button onclick="setCardBorder('none')" class="sandbox-anim-btn px-4 py-1.5 rounded-lg text-sm border border-[var(--color-accent)] text-[var(--color-accent)]" data-border="none">None</button>
+                            <button onclick="setCardBorder('solid')" class="sandbox-anim-btn active px-4 py-1.5 rounded-lg text-sm border border-[var(--color-accent)]" data-border="solid">Solid</button>
+                            <button onclick="setCardBorder('dashed')" class="sandbox-anim-btn px-4 py-1.5 rounded-lg text-sm border border-[var(--color-accent)] text-[var(--color-accent)]" data-border="dashed">Dashed</button>
+                            <button onclick="setCardBorder('accent')" class="sandbox-anim-btn px-4 py-1.5 rounded-lg text-sm border border-[var(--color-accent)] text-[var(--color-accent)]" data-border="accent">Accent</button>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="font-heading text-2xl font-semibold mb-4 text-center md:text-left">Contact Preview</h3>
+                    <p class="mb-4 text-[var(--color-text-secondary)] text-sm">A live preview of your contact section. Changes to your theme apply instantly.</p>
+                    <div class="interactive-card rounded-xl p-6 shadow-md border border-gray-200 dark:border-gray-700 text-center">
+                        <p class="font-semibold mb-1 text-[var(--color-text-primary)]">{{ portfolio_name }}</p>
+                        <p class="text-sm text-[var(--color-text-secondary)] mb-4">{{ hero_subtitle }}</p>
+                        {% if contact_info.email %}
+                        <button onclick="copyEmail('{{ contact_info.email }}')" class="inline-flex items-center gap-2 px-4 py-2 mb-4 rounded-lg bg-[var(--color-background)] border border-gray-200 dark:border-gray-700 text-sm font-mono text-[var(--color-text-primary)] hover:shadow transition-all">
+                            <i class="fas fa-envelope text-[var(--color-accent)] text-xs"></i>
+                            <span>{{ contact_info.email }}</span>
+                        </button>
+                        {% endif %}
+                        <div class="flex justify-center gap-4 flex-wrap">
+                            {% if contact_info.github_url %}<a href="{{ contact_info.github_url }}" target="_blank" class="flex flex-col items-center gap-1 p-3 rounded-lg hover:bg-[var(--color-background)] transition-colors" aria-label="GitHub"><i class="fab fa-github text-xl text-[var(--color-accent)]"></i><span class="text-xs text-[var(--color-text-secondary)]">GitHub</span></a>{% endif %}
+                            {% if contact_info.linkedin_url %}<a href="{{ contact_info.linkedin_url }}" target="_blank" class="flex flex-col items-center gap-1 p-3 rounded-lg hover:bg-[var(--color-background)] transition-colors" aria-label="LinkedIn"><i class="fab fa-linkedin text-xl text-[var(--color-accent)]"></i><span class="text-xs text-[var(--color-text-secondary)]">LinkedIn</span></a>{% endif %}
+                            {% if contact_info.bandcamp_url %}<a href="{{ contact_info.bandcamp_url }}" target="_blank" class="flex flex-col items-center gap-1 p-3 rounded-lg hover:bg-[var(--color-background)] transition-colors" aria-label="Bandcamp"><i class="fab fa-bandcamp text-xl text-[var(--color-accent)]"></i><span class="text-xs text-[var(--color-text-secondary)]">Bandcamp</span></a>{% endif %}
+                            {% if contact_info.kofi_url %}<a href="{{ contact_info.kofi_url }}" target="_blank" class="flex flex-col items-center gap-1 p-3 rounded-lg hover:bg-[var(--color-background)] transition-colors" aria-label="Ko-fi"><i class="fas fa-mug-hot text-xl text-[var(--color-accent)]"></i><span class="text-xs text-[var(--color-text-secondary)]">Ko-fi</span></a>{% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 flex flex-wrap justify-center gap-4">
+                <button onclick="exportTheme()" class="px-6 py-3 rounded-lg bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)] font-semibold transition-colors">
+                    <i class="fas fa-download mr-2"></i>Export Theme CSS
+                </button>
+                <button onclick="resetAllCustomizations()" class="px-6 py-3 rounded-lg bg-red-500 text-white hover:bg-red-600 font-semibold">
+                    <i class="fas fa-undo mr-2"></i>Reset All Customizations
+                </button>
             </div>
           </div>
         </section>
@@ -761,6 +855,86 @@ function applySectionOrder(order) {
     });
 }
 
+function setFontFamily(family) {
+    document.body.style.fontFamily = `'${family}', sans-serif`;
+}
+
+function setFontScale(scale) {
+    document.documentElement.style.fontSize = (scale / 100) * 16 + 'px';
+    document.getElementById('fontScaleValue').textContent = scale;
+}
+
+function setCardRadius(px) {
+    document.documentElement.style.setProperty('--card-radius', px + 'px');
+    document.getElementById('cardRadiusValue').textContent = px;
+}
+
+function setAnimSpeed(speed) {
+    document.querySelectorAll('[data-speed]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.speed === speed);
+        btn.classList.toggle('text-[var(--color-accent)]', btn.dataset.speed !== speed);
+    });
+    document.documentElement.classList.remove('anim-fast', 'anim-slow', 'anim-none');
+    if (speed !== 'normal') document.documentElement.classList.add('anim-' + speed);
+}
+
+function setSpotlightSize(size) {
+    document.documentElement.style.setProperty('--spotlight-size', size + 'px');
+    document.getElementById('spotlightSizeValue').textContent = size;
+    // Rebuild the interactive card spotlight rule inline
+    const styleId = 'spotlight-override';
+    let el = document.getElementById(styleId);
+    if (!el) { el = document.createElement('style'); el.id = styleId; document.head.appendChild(el); }
+    el.textContent = `.interactive-card::before { background: radial-gradient(${size}px circle at var(--mouseX) var(--mouseY), var(--color-spotlight), transparent 40%); }`;
+}
+
+const _shadowLevels = ['none', 'sm', 'md', 'lg', 'xl'];
+const _shadowLabels = ['None', 'Small', 'Medium', 'Large'];
+function setCardShadow(level) {
+    document.getElementById('cardShadowValue').textContent = _shadowLabels[level] || 'Medium';
+    const styleId = 'shadow-override';
+    let el = document.getElementById(styleId);
+    if (!el) { el = document.createElement('style'); el.id = styleId; document.head.appendChild(el); }
+    const shadows = [
+        'none',
+        '0 1px 3px rgba(0,0,0,0.12)',
+        '0 4px 12px rgba(0,0,0,0.15)',
+        '0 8px 28px rgba(0,0,0,0.2)'
+    ];
+    el.textContent = `.interactive-card { box-shadow: ${shadows[level] || shadows[2]} !important; }`;
+}
+
+function setCardBorder(style) {
+    document.querySelectorAll('[data-border]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.border === style);
+        btn.classList.toggle('text-[var(--color-accent)]', btn.dataset.border !== style);
+    });
+    const styleId = 'border-override';
+    let el = document.getElementById(styleId);
+    if (!el) { el = document.createElement('style'); el.id = styleId; document.head.appendChild(el); }
+    const borderMap = {
+        none:   '.interactive-card { border: none !important; }',
+        solid:  '.interactive-card { border: 1px solid rgba(128,128,128,0.25) !important; }',
+        dashed: '.interactive-card { border: 1px dashed rgba(128,128,128,0.4) !important; }',
+        accent: '.interactive-card { border: 1.5px solid var(--color-accent) !important; }',
+    };
+    el.textContent = borderMap[style] || '';
+}
+
+function exportTheme() {
+    const mode = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+    const vars = ['--color-background','--color-text-primary','--color-text-secondary','--color-card-background','--color-accent','--color-accent-hover'];
+    const computed = getComputedStyle(document.documentElement);
+    const lines = vars.map(v => `  ${v}: ${computed.getPropertyValue(v).trim()};`);
+    const css = `/* ${mode} theme */\n:root {\n${lines.join('\n')}\n}`;
+    navigator.clipboard.writeText(css).then(() => {
+        const btn = event.currentTarget;
+        const original = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check mr-2"></i>Copied to clipboard!';
+        setTimeout(() => { btn.innerHTML = original; }, 2500);
+    });
+}
+
 function resetAllCustomizations() {
   localStorage.removeItem('customColors');
   localStorage.removeItem('theme');
@@ -775,6 +949,36 @@ function resetAllCustomizations() {
   const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   setMode(prefersDark ? 'dark' : 'light');
   applySectionOrder(defaultSectionOrder);
+
+  // Reset typography & visual style controls
+  document.body.style.fontFamily = '';
+  document.documentElement.style.fontSize = '';
+  document.documentElement.style.removeProperty('--card-radius');
+  document.documentElement.classList.remove('anim-fast', 'anim-slow', 'anim-none');
+  const fontScaleEl = document.getElementById('fontScaleRange');
+  if (fontScaleEl) { fontScaleEl.value = 100; document.getElementById('fontScaleValue').textContent = 100; }
+  const cardRadiusEl = document.getElementById('cardRadiusRange');
+  if (cardRadiusEl) { cardRadiusEl.value = 8; document.getElementById('cardRadiusValue').textContent = 8; }
+  const fontFamilyEl = document.getElementById('fontFamilySelect');
+  if (fontFamilyEl) fontFamilyEl.value = 'Inter';
+  document.querySelectorAll('[data-speed]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.speed === 'normal');
+    btn.classList.toggle('text-[var(--color-accent)]', btn.dataset.speed !== 'normal');
+  });
+
+  // Reset advanced controls
+  ['spotlight-override', 'shadow-override', 'border-override'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.remove();
+  });
+  const spotlightEl = document.getElementById('spotlightSizeRange');
+  if (spotlightEl) { spotlightEl.value = 400; document.getElementById('spotlightSizeValue').textContent = 400; }
+  const shadowEl = document.getElementById('cardShadowRange');
+  if (shadowEl) { shadowEl.value = 1; document.getElementById('cardShadowValue').textContent = 'Medium'; }
+  document.querySelectorAll('[data-border]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.border === 'solid');
+    btn.classList.toggle('text-[var(--color-accent)]', btn.dataset.border !== 'solid');
+  });
 
   // Add flash effect for visual feedback
   const playControls = document.getElementById('play-controls');
