@@ -147,6 +147,56 @@
             color: var(--color-text-primary);
             transition: background-color 0.3s, color 0.3s;
         }
+        /* === NAV GLASSMORPHISM === */
+        nav {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+        }
+        .dark nav {
+            background: rgba(17, 24, 39, 0.65);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        /* === HERO BLOBS === */
+        .hero-blob {
+            position: absolute;
+            border-radius: 9999px;
+            filter: blur(72px);
+            opacity: 0.18;
+            pointer-events: none;
+        }
+        .dark .hero-blob { opacity: 0.22; }
+        .hero-blob-1 {
+            width: 45%; height: 65%;
+            top: -15%; left: -8%;
+            background: var(--color-accent);
+            animation: blobDrift1 12s ease-in-out infinite alternate;
+        }
+        .hero-blob-2 {
+            width: 35%; height: 55%;
+            bottom: -15%; right: 5%;
+            background: var(--color-accent-hover);
+            animation: blobDrift2 15s ease-in-out infinite alternate;
+        }
+        .hero-blob-3 {
+            width: 20%; height: 30%;
+            top: 30%; left: 40%;
+            background: var(--color-accent);
+            animation: blobDrift1 9s ease-in-out infinite alternate-reverse;
+            opacity: 0.1;
+        }
+        @keyframes blobDrift1 {
+            0%   { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(40px, -30px) scale(1.12); }
+        }
+        @keyframes blobDrift2 {
+            0%   { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(-30px, 40px) scale(0.9); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .hero-blob { animation: none !important; }
+        }
         #scroll-progress-bar { position: fixed; top: 0; left: 0; height: 4px; background-color: var(--color-accent); width: 0%; z-index: 50; transition: width 0.1s linear; }
         #back-to-top-btn { position: fixed; bottom: 1.5rem; right: 1.5rem; background-color: var(--color-accent); color: white; padding: 0.75rem; border-radius: 9999px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out, background-color 0.3s; opacity: 0; visibility: hidden; z-index: 40; cursor: pointer; }
         #back-to-top-btn:hover { background-color: var(--color-accent-hover); }
@@ -318,7 +368,7 @@
 
     <div id="scroll-progress-bar"></div>
 
-    <nav class="sticky top-0 shadow-md z-40 transition-colors duration-300 bg-[var(--color-card-background)]">
+    <nav class="sticky top-0 z-40 transition-colors duration-300 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
             <a href="#" class="text-2xl font-bold font-heading text-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded">{{ portfolio_name }}</a>
             <div class="flex items-center space-x-4">
