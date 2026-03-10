@@ -44,13 +44,30 @@
 
         let defaultSectionOrder = [];
 
+        const _themeColorVars = ['--color-background', '--color-text-primary', '--color-text-secondary', '--color-card-background', '--color-accent', '--color-accent-hover'];
+
+        function syncLivePreviews() {
+            const isDark = document.documentElement.classList.contains('dark');
+            document.querySelectorAll('.live-preview-iframe').forEach(iframe => {
+                try {
+                    const doc = iframe.contentDocument || iframe.contentWindow.document;
+                    doc.documentElement.classList.toggle('dark', isDark);
+                    _themeColorVars.forEach(v => {
+                        const val = document.documentElement.style.getPropertyValue(v);
+                        val ? doc.documentElement.style.setProperty(v, val)
+                            : doc.documentElement.style.removeProperty(v);
+                    });
+                } catch (e) {}
+            });
+        }
+
         function toggleTheme() {
             document.documentElement.classList.toggle('dark');
             localStorage.theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
-            const colorVars = ['--color-background', '--color-text-primary', '--color-text-secondary', '--color-card-background', '--color-accent', '--color-accent-hover'];
-            colorVars.forEach(v => document.documentElement.style.removeProperty(v));
+            _themeColorVars.forEach(v => document.documentElement.style.removeProperty(v));
             applySavedThemeColors();
             updatePickers();
+            syncLivePreviews();
         }
 
         function applyInteractiveCardEffect() {
@@ -121,6 +138,7 @@
 
             document.querySelectorAll('.fade-in-section').forEach(element => { observer.observe(element); });
             document.getElementById('back-to-top-btn').addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+            document.querySelectorAll('.live-preview-iframe').forEach(iframe => { iframe.addEventListener('load', syncLivePreviews); });
 
             initSectionReordering();
             initTypewriter();
@@ -781,6 +799,7 @@ function idToCssVar(id) {
 function updateColor(cssVar, value) {
   document.documentElement.style.setProperty(cssVar, value);
   saveThemeColor(cssVar, value);
+  syncLivePreviews();
 }
 
 function saveThemeColor(cssVar, value) {
@@ -839,6 +858,7 @@ function setMode(mode) {
   }
   applySavedThemeColors();
   updatePickers();
+  syncLivePreviews();
 }
 
 function initTypewriter() {
