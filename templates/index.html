@@ -148,7 +148,9 @@
             transition: background-color 0.3s, color 0.3s;
         }
         /* === NAV GLASSMORPHISM === */
+        html, body { margin: 0; padding: 0; }
         nav {
+            box-sizing: border-box;
             background: rgba(255, 255, 255, 0.6);
             backdrop-filter: blur(14px);
             -webkit-backdrop-filter: blur(14px);
@@ -338,20 +340,28 @@
     {% endif %}
 {% endmacro %}
 
-{% macro experience_group(group) %}
-    <li class="interactive-card p-6 rounded-lg shadow-lg stagger-item transform hover:-translate-y-2 transition-transform duration-300">
-        <h3 class="font-heading text-2xl font-bold mb-4 text-[var(--color-text-primary)]">{{ group.company }}</h3>
-        <ul class="space-y-4 pl-5 border-l-2 border-[var(--color-accent)]">
-            {% for job in group.roles %}
-            <li class="stagger-item">
-                <strong class="text-xl text-[var(--color-text-primary)]">{{ job.role }}</strong>
-                <span class="block text-sm text-[var(--color-text-secondary)]">{{ job.period }}</span>
-                {% if job.details %}
-                <p class="mt-1 text-[var(--color-text-secondary)]">{{ job.details }}</p>
-                {% endif %}
-            </li>
-            {% endfor %}
-        </ul>
+{% macro experience_group(group, idx=1) %}
+    {% set on_right = (idx % 2 == 0) %}
+    <li class="stagger-item relative md:flex {% if on_right %}md:flex-row-reverse{% endif %} md:items-start">
+        {# Timeline dot — desktop only #}
+        <div class="hidden md:block absolute left-1/2 -translate-x-1/2 top-7 w-4 h-4 rounded-full bg-[var(--color-accent)] border-4 border-[var(--color-background)] z-10 shadow-md ring-2 ring-[var(--color-accent)] ring-opacity-40" aria-hidden="true"></div>
+        {# Card — takes left or right half on desktop #}
+        <div class="w-full md:w-1/2 {% if on_right %}md:pl-12{% else %}md:pr-12{% endif %}">
+            <div class="interactive-card p-6 rounded-lg shadow-lg transform hover:-translate-y-2 transition-transform duration-300">
+                <h3 class="font-heading text-2xl font-bold mb-4 text-[var(--color-text-primary)]">{{ group.company }}</h3>
+                <ul class="space-y-4 pl-5 border-l-2 border-[var(--color-accent)]">
+                    {% for job in group.roles %}
+                    <li>
+                        <strong class="text-xl text-[var(--color-text-primary)]">{{ job.role }}</strong>
+                        <span class="block text-sm text-[var(--color-text-secondary)]">{{ job.period }}</span>
+                        {% if job.details %}
+                        <p class="mt-1 text-[var(--color-text-secondary)]">{{ job.details }}</p>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
     </li>
 {% endmacro %}
 
@@ -368,7 +378,7 @@
 
     <div id="scroll-progress-bar"></div>
 
-    <nav class="sticky top-0 z-40 transition-colors duration-300 shadow-sm">
+    <nav class="fixed top-0 left-0 right-0 z-40 transition-colors duration-300 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
             <a href="#" class="text-2xl font-bold font-heading text-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 rounded">{{ portfolio_name }}</a>
             <div class="flex items-center space-x-4">
@@ -399,9 +409,12 @@
         </div>
     </nav>
 
-    <main id="main-content" class="container mx-auto px-4">
-        <section id="about" class="py-24 md:py-32 fade-in-section">
-            <div class="max-w-6xl mx-auto flex flex-col-reverse md:flex-row items-center justify-center gap-10 md:gap-16">
+    <main id="main-content" class="pt-20">
+        <section id="about" class="py-24 md:py-32 px-4 fade-in-section relative overflow-hidden">
+            <div class="hero-blob hero-blob-1" aria-hidden="true"></div>
+            <div class="hero-blob hero-blob-2" aria-hidden="true"></div>
+            <div class="hero-blob hero-blob-3" aria-hidden="true"></div>
+            <div class="max-w-6xl mx-auto flex flex-col-reverse md:flex-row items-center justify-center gap-10 md:gap-16 relative z-10">
                 <div class="text-center md:text-left stagger-item">
                     <h1 class="font-heading text-4xl md:text-6xl font-bold mb-2 text-[var(--color-text-primary)]">{{ hero_title }}</h1>
                     <p class="font-heading text-xl md:text-2xl text-[var(--color-accent)] font-semibold mb-6" aria-label="{{ hero_subtitle }}">
@@ -418,18 +431,22 @@
             </div>
         </section>
 
-        <section id="experience" class="py-24 fade-in-section">
-            <div class="max-w-4xl mx-auto">
-                <h2 class="font-heading text-4xl font-bold mb-12 text-center">Work Experience</h2>
-                <ul class="space-y-8">
-                    {% for group in grouped_experience %}
-                        {{ experience_group(group) }}
-                    {% endfor %}
-                </ul>
+        <section id="experience" class="py-24 px-4 fade-in-section">
+            <div class="max-w-5xl mx-auto">
+                <h2 class="font-heading text-4xl font-bold mb-16 text-center">Work Experience</h2>
+                <div class="relative">
+                    {# Center line — desktop only #}
+                    <div class="hidden md:block absolute left-1/2 -translate-x-1/2 inset-y-0 w-px bg-[var(--color-accent)] opacity-25" aria-hidden="true"></div>
+                    <ul class="space-y-12">
+                        {% for group in grouped_experience %}
+                            {{ experience_group(group, loop.index) }}
+                        {% endfor %}
+                    </ul>
+                </div>
             </div>
         </section>
 
-        <section id="skills" class="py-24 fade-in-section">
+        <section id="skills" class="py-24 px-4 fade-in-section">
             <div class="max-w-4xl mx-auto text-center">
                 <h2 class="font-heading text-4xl font-bold mb-12">Skills</h2>
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
@@ -441,10 +458,10 @@
         </section>
 
         <!-- Certifications Section -->
-        <section id="certifications" class="py-24 fade-in-section">
-            <div class="container mx-auto px-6">
+        <section id="certifications" class="py-24 px-4 fade-in-section">
+            <div class="max-w-6xl mx-auto">
                 <h2 class="font-heading text-4xl font-bold mb-12 text-center">Certifications</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {% for cert in certifications %}
                     <div class="interactive-card p-6 rounded-lg shadow-lg stagger-item flex flex-col transform hover:-translate-y-1 transition-transform duration-300">
                         <div class="flex-grow">
@@ -466,7 +483,7 @@
             </div>
         </section>
 
-        <section id="projects" class="py-24 fade-in-section">
+        <section id="projects" class="py-24 px-4 fade-in-section">
             <div class="max-w-5xl mx-auto">
                 <h2 class="font-heading text-4xl font-bold mb-12 text-center">Projects</h2>
                 {% if featured_project %}
@@ -480,7 +497,7 @@
             </div>
         </section>
 
-        <section id="play" class="py-24 fade-in-section">
+        <section id="play" class="py-24 px-4 fade-in-section">
           <div id="play-controls" class="max-w-4xl mx-auto text-center">
             <h2 class="font-heading text-4xl font-bold mb-4">{{ sandbox_title }}</h2>
             <p class="max-w-3xl mx-auto mb-8 text-[var(--color-text-secondary)]">{{ sandbox_description }}</p>
@@ -537,7 +554,7 @@
           </div>
         </section>
 
-        <section id="contact" class="py-24 fade-in-section">
+        <section id="contact" class="py-24 px-4 fade-in-section">
           <div class="max-w-4xl mx-auto text-center">
             <h2 class="font-heading text-4xl font-bold mb-4">Get In Touch</h2>
             <p class="text-[var(--color-text-secondary)] mb-10">Feel free to reach out via any of the links below.</p>
