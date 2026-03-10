@@ -1253,13 +1253,8 @@ function updatePickers() {
     'accentHoverColorPicker'
   ];
   colorVars.forEach((v, i) => {
-    const originalValue = document.documentElement.style.getPropertyValue(v);
-    document.documentElement.style.removeProperty(v);
     const val = getComputedStyle(document.documentElement).getPropertyValue(v).trim() || '#000000';
     document.getElementById(pickerIds[i]).value = val;
-    if (originalValue) {
-        document.documentElement.style.setProperty(v, originalValue);
-    }
   });
 }
 
