@@ -85,6 +85,13 @@
             }
         }
 
+        // Prevent recursive live-preview iframes
+        if (window.self !== window.top) {
+            document.addEventListener('DOMContentLoaded', () => {
+                document.querySelectorAll('.live-preview-iframe').forEach(el => el.remove());
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                 document.documentElement.classList.add('dark');
@@ -335,7 +342,18 @@
         </div>
     {% else %}
         <div class="interactive-card rounded-lg shadow-lg stagger-item flex flex-col overflow-hidden transform hover:-translate-y-1 transition-transform duration-300 group">
-            {% if project.image_url %}
+            {% if project.live_preview %}
+            <div class="relative h-40 overflow-hidden">
+                <iframe src="/" title="Live preview of {{ project.title }}" loading="lazy" class="live-preview-iframe absolute top-0 left-0 border-0 pointer-events-none bg-white" style="width: 1280px; height: 900px; transform: scale(0.38); transform-origin: top left;"></iframe>
+                <div class="absolute inset-0 bg-[var(--color-accent)] opacity-0 group-hover:opacity-90 transition-opacity duration-300 flex items-center justify-center">
+                    {% if project.url %}
+                    <a href="{{ project.url }}" target="_blank" rel="noopener noreferrer" class="text-white font-bold text-base border-2 border-white px-5 py-2 rounded-lg hover:bg-white hover:text-[var(--color-accent)] transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
+                        View Project <i class="fas fa-external-link-alt ml-1 text-xs"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% elif project.image_url %}
             <div class="relative h-40 overflow-hidden">
                 <img src="{{ project.image_url }}" alt="{{ project.title }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
                 <div class="absolute inset-0 bg-[var(--color-accent)] opacity-0 group-hover:opacity-90 transition-opacity duration-300 flex items-center justify-center">
