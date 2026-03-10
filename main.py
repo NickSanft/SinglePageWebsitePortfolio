@@ -84,34 +84,38 @@ def load_data():
                  "details": "Gained hands-on experience with version control and agile methodologies."}
             ],
             "skills": [
-                {"name": "Python", "icon": "fab fa-python"},
-                {"name": "JavaScript", "icon": "fab fa-js"},
-                {"name": "React", "icon": "fab fa-react"},
-                {"name": "Node.js", "icon": "fab fa-node-js"},
-                {"name": "Tailwind CSS", "icon": "fab fa-css3-alt"},
-                {"name": "Flask", "icon": "fas fa-flask"},
-                {"name": "SQL", "icon": "fas fa-database"},
-                {"name": "Git", "icon": "fab fa-git-alt"},
-                {"name": "Cloud Computing", "icon": "fas fa-cloud"}
+                {"name": "Python", "icon": "fab fa-python", "proficiency": 92},
+                {"name": "JavaScript", "icon": "fab fa-js", "proficiency": 85},
+                {"name": "React", "icon": "fab fa-react", "proficiency": 78},
+                {"name": "Node.js", "icon": "fab fa-node-js", "proficiency": 75},
+                {"name": "Tailwind CSS", "icon": "fab fa-css3-alt", "proficiency": 88},
+                {"name": "Flask", "icon": "fas fa-flask", "proficiency": 80},
+                {"name": "SQL", "icon": "fas fa-database", "proficiency": 70},
+                {"name": "Git", "icon": "fab fa-git-alt", "proficiency": 90},
+                {"name": "Cloud Computing", "icon": "fas fa-cloud", "proficiency": 65}
             ],
             "certifications": [
                 {
                     "name": "AWS Certified Solutions Architect",
                     "description": "Validated expertise in designing distributed systems on AWS.",
-                    "link": "https://aws.amazon.com/certification/"
+                    "link": "https://aws.amazon.com/certification/",
+                    "issuer_logo_url": "https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg"
                 },
                 {
                     "name": "Professional Data Engineer",
                     "description": "Demonstrated proficiency in data processing systems and machine learning models.",
-                    "link": "https://cloud.google.com/certification/data-engineer"
+                    "link": "https://cloud.google.com/certification/data-engineer",
+                    "issuer_logo_url": "https://upload.wikimedia.org/wikipedia/commons/5/51/Google_Cloud_logo.svg"
                 },
                 {
                     "name": "Meta Back-End Developer",
                     "description": "Comprehensive course covering Python, Django, APIs, and database management.",
-                    "link": "https://www.coursera.org/"
+                    "link": "https://www.coursera.org/",
+                    "issuer_logo_url": "https://upload.wikimedia.org/wikipedia/commons/9/97/Coursera-Logo_600x600.svg"
                 }
             ],
             "contact_info": {
+                "email": "you@example.com",
                 "github_url": "https://github.com/yourusername",
                 "linkedin_url": "https://linkedin.com/in/yourusername",
                 "bandcamp_url": "https://yourusername.bandcamp.com",
