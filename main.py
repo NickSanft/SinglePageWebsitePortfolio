@@ -30,8 +30,8 @@ def load_data():
                     "text_primary": "#111827",
                     "text_secondary": "#4b5563",
                     "card_background": "#ffffff",
-                    "accent": "#3b82f6",
-                    "accent_hover": "#2563eb",
+                    "accent": "#1d4ed8",
+                    "accent_hover": "#1e40af",
                     "spotlight_color": "rgba(255, 255, 255, 0.2)"
                 },
                 "dark": {
@@ -39,8 +39,8 @@ def load_data():
                     "text_primary": "#f9fafb",
                     "text_secondary": "#d1d5db",
                     "card_background": "#1f2937",
-                    "accent": "#60a5fa",
-                    "accent_hover": "#3b82f6",
+                    "accent": "#93c5fd",
+                    "accent_hover": "#60a5fa",
                     "spotlight_color": "rgba(255, 255, 255, 0.1)"
                 }
             },
