@@ -318,6 +318,9 @@
         html.anim-none * { transition: none !important; animation: none !important; }
         .sandbox-anim-btn { transition: background-color 0.2s, color 0.2s; }
         .sandbox-anim-btn.active { background-color: var(--color-accent); color: white; }
+        .gh-stat-card { background-color: var(--color-card-background); transition: transform 0.2s; }
+        .gh-skeleton { color: transparent; background: linear-gradient(90deg, rgba(128,128,128,0.15) 25%, rgba(128,128,128,0.3) 50%, rgba(128,128,128,0.15) 75%); background-size: 200% 100%; animation: gh-shimmer 1.4s infinite; border-radius: 4px; min-width: 2rem; }
+        @keyframes gh-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
     </style>
 </head>
 <body class="bg-[var(--color-background)] text-[var(--color-text-primary)] font-sans">
@@ -416,26 +419,30 @@
     {% endif %}
 {% endmacro %}
 
-{% macro experience_group(group, idx=1) %}
+{% macro experience_item(job, idx=1) %}
     {% set on_right = (idx % 2 == 0) %}
     <li class="stagger-item relative md:flex {% if on_right %}md:flex-row-reverse{% endif %} md:items-start">
-        {# Timeline dot — desktop only #}
-        <div class="hidden md:block absolute left-1/2 -translate-x-1/2 top-7 w-4 h-4 rounded-full bg-[var(--color-accent)] border-4 border-[var(--color-background)] z-10 shadow-md ring-2 ring-[var(--color-accent)] ring-opacity-40" aria-hidden="true"></div>
+        {# Timeline dot — desktop only. Larger + ring for first role at a company. #}
+        {% if job.is_company_start %}
+        <div class="hidden md:block absolute left-1/2 -translate-x-1/2 top-6 w-5 h-5 rounded-full bg-[var(--color-accent)] border-4 border-[var(--color-background)] z-10 shadow-md ring-2 ring-[var(--color-accent)] ring-opacity-50" aria-hidden="true"></div>
+        {% else %}
+        <div class="hidden md:block absolute left-1/2 -translate-x-1/2 top-6 w-3 h-3 rounded-full bg-[var(--color-card-background)] border-2 border-[var(--color-accent)] z-10 shadow" aria-hidden="true"></div>
+        {% endif %}
         {# Card — takes left or right half on desktop #}
         <div class="w-full md:w-1/2 {% if on_right %}md:pl-12{% else %}md:pr-12{% endif %}">
             <div class="interactive-card p-6 rounded-lg shadow-lg transform hover:-translate-y-2 transition-transform duration-300">
-                <h3 class="font-heading text-2xl font-bold mb-4 text-[var(--color-text-primary)]">{{ group.company }}</h3>
-                <ul class="space-y-4 pl-5 border-l-2 border-[var(--color-accent)]">
-                    {% for job in group.roles %}
-                    <li>
-                        <strong class="text-xl text-[var(--color-text-primary)]">{{ job.role }}</strong>
-                        <span class="block text-sm text-[var(--color-text-secondary)]">{{ job.period }}</span>
-                        {% if job.details %}
-                        <p class="mt-1 text-[var(--color-text-secondary)]">{{ job.details }}</p>
-                        {% endif %}
-                    </li>
-                    {% endfor %}
-                </ul>
+                <div class="flex items-start justify-between gap-3 mb-1">
+                    <h3 class="font-heading text-lg font-bold text-[var(--color-text-primary)] leading-snug">{{ job.role }}</h3>
+                    {% if job.is_company_start %}
+                    <span class="flex-shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full bg-[var(--color-accent)] text-white">{{ job.company }}</span>
+                    {% else %}
+                    <span class="flex-shrink-0 text-xs font-medium px-2.5 py-1 rounded-full border border-[var(--color-accent)] text-[var(--color-accent)]">{{ job.company }}</span>
+                    {% endif %}
+                </div>
+                <span class="block text-sm text-[var(--color-text-secondary)] mb-3">{{ job.period }}</span>
+                {% if job.details %}
+                <p class="text-[var(--color-text-secondary)] text-sm leading-relaxed">{{ job.details }}</p>
+                {% endif %}
             </div>
         </div>
     </li>
@@ -513,9 +520,9 @@
                 <div class="relative">
                     {# Center line — desktop only #}
                     <div class="hidden md:block absolute left-1/2 -translate-x-1/2 inset-y-0 w-px bg-[var(--color-accent)] opacity-25" aria-hidden="true"></div>
-                    <ul class="space-y-12">
-                        {% for group in grouped_experience %}
-                            {{ experience_group(group, loop.index) }}
+                    <ul class="space-y-10">
+                        {% for job in flat_experience %}
+                            {{ experience_item(job, loop.index) }}
                         {% endfor %}
                     </ul>
                 </div>

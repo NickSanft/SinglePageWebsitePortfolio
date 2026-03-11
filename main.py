@@ -149,6 +149,21 @@ def load_data():
                 {"role": job["role"], "period": job["period"], "details": job.get("details", "")})
     data["grouped_experience"] = grouped_experience
 
+    # Flat sorted experience — one entry per role, company_start flags first role per company
+    flat_experience = []
+    prev_company = None
+    for group in grouped_experience:
+        for role in group["roles"]:
+            flat_experience.append({
+                "role": role["role"],
+                "period": role["period"],
+                "details": role.get("details", ""),
+                "company": group["company"],
+                "is_company_start": group["company"] != prev_company,
+            })
+            prev_company = group["company"]
+    data["flat_experience"] = flat_experience
+
     # Generate dynamic copyright string
     start_year = data.get("copyright_start_year")
     current_year = datetime.datetime.now().year
