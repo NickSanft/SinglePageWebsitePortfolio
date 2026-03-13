@@ -30,8 +30,8 @@ def load_data():
                     "text_primary": "#111827",
                     "text_secondary": "#4b5563",
                     "card_background": "#ffffff",
-                    "accent": "#1d4ed8",
-                    "accent_hover": "#1e40af",
+                    "accent": "#2563eb",
+                    "accent_hover": "#1d4ed8",
                     "spotlight_color": "rgba(255, 255, 255, 0.2)"
                 },
                 "dark": {
