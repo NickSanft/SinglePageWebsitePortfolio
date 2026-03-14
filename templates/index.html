@@ -7,13 +7,30 @@
     <meta name="description" content="{{ about_me[:160] }}">
     <meta property="og:title" content="{{ website_title }}">
     <meta property="og:description" content="{{ about_me[:160] }}">
-    <meta property="og:image" content="{{ hero_image_url }}">
+    <meta property="og:image" content="{{ og_image_url | default(hero_image_url) }}">
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ site_url | default('') }}">
+    <link rel="canonical" href="{{ site_url | default('') }}">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{{ website_title }}">
     <meta name="twitter:description" content="{{ about_me[:160] }}">
+    <meta name="twitter:image" content="{{ og_image_url | default(hero_image_url) }}">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": {{ hero_title | tojson }},
+      "url": {{ (site_url | default('')) | tojson }},
+      "image": {{ (og_image_url | default(hero_image_url)) | tojson }},
+      "description": {{ about_me | tojson }},
+      "sameAs": {{ social_same_as | tojson }}
+    }
+    </script>
+    {% if tailwind_mode is defined and tailwind_mode == 'built' %}
+    <link rel="stylesheet" href="{{ static_root }}tailwind.css">
+    {% else %}
     <script src="{{ static_root }}tailwindcss.js"></script>
+    {% endif %}
     <script src="{{ static_root }}Sortable.min.js"></script>
     <link rel="icon" href="{{ static_root }}icon.png" type="image/x-icon">
     <link rel="stylesheet" href="{{ static_root }}fontawesome-free-6.4.0-web/css/all.min.css">
@@ -21,7 +38,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@600;700&family=Roboto:wght@400;600;700&family=Lato:wght@400;700&family=Merriweather:wght@400;700&family=Playfair+Display:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <script>
-        tailwind.config = {
+        if (typeof tailwind !== 'undefined') tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {

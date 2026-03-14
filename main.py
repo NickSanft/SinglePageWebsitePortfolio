@@ -2,9 +2,12 @@ from flask import Flask, render_template, send_from_directory, Response
 import os
 import json
 import datetime
+import platform
+import subprocess
 import requests
 import zipfile
 import io
+from urllib.parse import urljoin
 
 app = Flask(__name__, static_url_path='', static_folder='output')
 
@@ -123,7 +126,8 @@ def load_data():
                 "resume_url": "#"
             },
             "copyright_name": "Your Name",
-            "copyright_start_year": 2024
+            "copyright_start_year": 2024,
+            "site_url": ""
         }
         with open("website_data.json", "w", encoding="utf-8") as f:
             json.dump(dummy_data, f, indent=4)
@@ -172,13 +176,28 @@ def load_data():
     else:
         data["copyright_string"] = str(current_year)
 
+    # Compute absolute OG image URL
+    site_url = data.get("site_url", "")
+    hero_image = data.get("hero_image_url", "")
+    if site_url and hero_image and not hero_image.startswith("http"):
+        data["og_image_url"] = urljoin(site_url, hero_image)
+    else:
+        data["og_image_url"] = hero_image
+
+    # Compute sameAs list for JSON-LD
+    contact = data.get("contact_info", {})
+    data["social_same_as"] = [
+        v for k, v in contact.items()
+        if k in ("github_url", "linkedin_url") and v
+    ]
+
     return data
 
 
 @app.route("/")
 def serve_index():
     data = load_data()
-    return render_template('index.html', static_root="/static/", pdf_url="/resume.pdf", **data)
+    return render_template('index.html', static_root="/static/", pdf_url="/resume.pdf", tailwind_mode="cdn", **data)
 
 
 @app.route("/resume.pdf")
@@ -196,6 +215,79 @@ def serve_resume():
 @app.route('/<path:path>')
 def serve_static_root(path):
     return send_from_directory('output', path)
+
+
+_TAILWIND_VERSION = "v3.4.17"
+_TAILWIND_BINARIES = {
+    ("windows", "amd64"): "tailwindcss-windows-x64.exe",
+    ("windows", "arm64"): "tailwindcss-windows-arm64.exe",
+    ("darwin",  "arm64"): "tailwindcss-macos-arm64",
+    ("darwin",  "amd64"): "tailwindcss-macos-x64",
+    ("linux",   "amd64"): "tailwindcss-linux-x64",
+    ("linux",   "arm64"): "tailwindcss-linux-arm64",
+}
+
+def _get_tailwind_cli(static_dir):
+    """Download the Tailwind standalone CLI if not already present; return its path."""
+    system = platform.system().lower()
+    machine = platform.machine().lower()
+    # Normalise arm variants
+    if "arm" in machine or "aarch" in machine:
+        arch = "arm64"
+    else:
+        arch = "amd64"
+    binary_name = _TAILWIND_BINARIES.get((system, arch))
+    if not binary_name:
+        raise RuntimeError(f"No Tailwind CLI binary for {system}/{arch}")
+    local_name = "tailwindcss.exe" if system == "windows" else "tailwindcss"
+    cli_path = os.path.join(static_dir, local_name)
+    if not os.path.exists(cli_path):
+        url = f"https://github.com/tailwindlabs/tailwindcss/releases/download/{_TAILWIND_VERSION}/{binary_name}"
+        print(f"Downloading Tailwind CLI {_TAILWIND_VERSION}...")
+        resp = requests.get(url, timeout=120)
+        resp.raise_for_status()
+        with open(cli_path, "wb") as f:
+            f.write(resp.content)
+        if system != "windows":
+            os.chmod(cli_path, 0o755)
+        print("Downloaded Tailwind CLI.")
+    return cli_path
+
+
+def _build_tailwind_css(cli_path, content_html_path, output_css_path):
+    """Run the Tailwind CLI to generate a purged, minified CSS file."""
+    config_js = os.path.join(os.path.dirname(output_css_path), "_tailwind_config.js")
+    input_css = os.path.join(os.path.dirname(output_css_path), "_tailwind_input.css")
+    try:
+        with open(config_js, "w", encoding="utf-8") as f:
+            f.write(f"""module.exports = {{
+  darkMode: 'class',
+  content: [{json.dumps(os.path.abspath(content_html_path))}],
+  theme: {{
+    extend: {{
+      fontFamily: {{ sans: ['Inter', 'sans-serif'], heading: ['Poppins', 'sans-serif'] }},
+      keyframes: {{ flash: {{ '0%, 100%': {{ backgroundColor: 'transparent' }}, '50%': {{ backgroundColor: 'rgba(59, 130, 246, 0.2)' }} }} }},
+      animation: {{ flash: 'flash 1s ease-in-out' }},
+    }},
+  }},
+}}
+""")
+        with open(input_css, "w", encoding="utf-8") as f:
+            f.write("@tailwind base;\n@tailwind components;\n@tailwind utilities;\n")
+        result = subprocess.run(
+            [cli_path, "-i", input_css, "-o", output_css_path, "--config", config_js, "--minify"],
+            capture_output=True, text=True
+        )
+        if result.returncode != 0:
+            raise RuntimeError(result.stderr.strip())
+        print(f"Built tailwind.css ({os.path.getsize(output_css_path) // 1024} KB).")
+        return True
+    finally:
+        for p in (config_js, input_css):
+            try:
+                os.remove(p)
+            except OSError:
+                pass
 
 
 def write_static_html():
@@ -254,7 +346,30 @@ def write_static_html():
             print(f"Error downloading Sortable.min.js: {e}")
 
     data = load_data()
-    rendered_for_file = render_template('index.html', static_root="static/", pdf_url="resume.pdf", **data)
+
+    # --- Tailwind CSS build ---
+    # Step 1: render with CDN mode so all class names are in the HTML for scanning
+    scan_html_path = os.path.join(output_dir, "_scan.html")
+    scan_html = render_template('index.html', static_root="static/", pdf_url="resume.pdf", tailwind_mode="cdn", **data)
+    with open(scan_html_path, "w", encoding="utf-8") as f:
+        f.write(scan_html)
+
+    tailwind_css_path = os.path.join(static_dir, "tailwind.css")
+    tailwind_mode = "cdn"
+    try:
+        cli_path = _get_tailwind_cli(static_dir)
+        _build_tailwind_css(cli_path, scan_html_path, tailwind_css_path)
+        tailwind_mode = "built"
+    except Exception as e:
+        print(f"Tailwind CLI build failed, falling back to CDN bundle: {e}")
+    finally:
+        try:
+            os.remove(scan_html_path)
+        except OSError:
+            pass
+
+    # Step 2: render final HTML with the determined tailwind_mode
+    rendered_for_file = render_template('index.html', static_root="static/", pdf_url="resume.pdf", tailwind_mode=tailwind_mode, **data)
 
     index_path = os.path.join(output_dir, "index.html")
     with open(index_path, "w", encoding="utf-8") as f:
