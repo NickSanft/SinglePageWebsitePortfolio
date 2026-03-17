@@ -547,11 +547,36 @@
         </section>
 
         <section id="skills" class="py-24 px-4 fade-in-section">
-            <div class="max-w-4xl mx-auto text-center">
-                <h2 class="font-heading text-4xl font-bold mb-12">Skills</h2>
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
-                    {% for skill in skills %}
-                        {{ skill_item(skill) }}
+            <div class="max-w-5xl mx-auto">
+                <h2 class="font-heading text-4xl font-bold mb-12 text-center">Skills</h2>
+                {% for category, category_skills in skills | groupby('category') %}
+                <div class="mb-10">
+                    <h3 class="font-heading text-sm font-semibold mb-5 text-[var(--color-accent)] uppercase tracking-widest text-center">{{ category }}</h3>
+                    <div class="flex flex-wrap justify-center gap-4">
+                        {% for skill in category_skills %}
+                            {{ skill_item(skill) }}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section id="domain" class="py-24 px-4 fade-in-section">
+            <div class="max-w-5xl mx-auto">
+                <h2 class="font-heading text-4xl font-bold mb-4 text-center">Domain Expertise</h2>
+                <p class="text-center text-[var(--color-text-secondary)] mb-12">Industry knowledge and specializations beyond the tech stack.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {% for domain in domain_knowledge %}
+                    <div class="interactive-card stagger-item flex gap-4 items-start p-6 rounded-xl shadow-lg bg-[var(--color-card-background)] transform hover:-translate-y-1 transition-transform duration-300">
+                        <div class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-[var(--color-accent)] bg-opacity-10">
+                            <i class="{{ domain.icon }} text-xl text-[var(--color-accent)]"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-heading text-lg font-bold mb-1 text-[var(--color-text-primary)]">{{ domain.name }}</h3>
+                            <p class="text-[var(--color-text-secondary)] text-sm leading-relaxed">{{ domain.description }}</p>
+                        </div>
+                    </div>
                     {% endfor %}
                 </div>
             </div>
@@ -677,6 +702,7 @@
                     <ol id="section-sorter" class="space-y-2">
                         <li data-section-id="experience" tabindex="0" aria-roledescription="Draggable section" aria-grabbed="false" class="p-3 rounded-lg shadow-md cursor-grab bg-gray-100 dark:bg-gray-800 text-[var(--color-text-primary)] flex items-center focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"><i class="fas fa-grip-vertical mr-3 text-gray-400"></i>Experience</li>
                         <li data-section-id="skills" tabindex="0" aria-roledescription="Draggable section" aria-grabbed="false" class="p-3 rounded-lg shadow-md cursor-grab bg-gray-100 dark:bg-gray-800 text-[var(--color-text-primary)] flex items-center focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"><i class="fas fa-grip-vertical mr-3 text-gray-400"></i>Skills</li>
+                        <li data-section-id="domain" tabindex="0" aria-roledescription="Draggable section" aria-grabbed="false" class="p-3 rounded-lg shadow-md cursor-grab bg-gray-100 dark:bg-gray-800 text-[var(--color-text-primary)] flex items-center focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"><i class="fas fa-grip-vertical mr-3 text-gray-400"></i>Domain Expertise</li>
                         <li data-section-id="certifications" tabindex="0" aria-roledescription="Draggable section" aria-grabbed="false" class="p-3 rounded-lg shadow-md cursor-grab bg-gray-100 dark:bg-gray-800 text-[var(--color-text-primary)] flex items-center focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"><i class="fas fa-grip-vertical mr-3 text-gray-400"></i>Certifications</li>
                         <li data-section-id="projects" tabindex="0" aria-roledescription="Draggable section" aria-grabbed="false" class="p-3 rounded-lg shadow-md cursor-grab bg-gray-100 dark:bg-gray-800 text-[var(--color-text-primary)] flex items-center focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"><i class="fas fa-grip-vertical mr-3 text-gray-400"></i>Projects</li>
                         <li data-section-id="contact" tabindex="0" aria-roledescription="Draggable section" aria-grabbed="false" class="p-3 rounded-lg shadow-md cursor-grab bg-gray-100 dark:bg-gray-800 text-[var(--color-text-primary)] flex items-center focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"><i class="fas fa-grip-vertical mr-3 text-gray-400"></i>Contact</li>
