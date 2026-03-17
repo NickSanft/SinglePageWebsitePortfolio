@@ -90,6 +90,19 @@ class ResumePDF(FPDF):
         self.multi_cell(0, 4, text)
 
 
+def _safe(text: str) -> str:
+    """Replace common Unicode characters that latin-1 / Helvetica can't encode."""
+    return (text
+        .replace("\u2014", " - ")   # em dash
+        .replace("\u2013", "-")     # en dash
+        .replace("\u2019", "'")     # right single quote
+        .replace("\u2018", "'")     # left single quote
+        .replace("\u201c", '"')     # left double quote
+        .replace("\u201d", '"')     # right double quote
+        .replace("\u2026", "...")   # ellipsis
+    )
+
+
 def _build_contact_line(data: dict) -> str:
     """Assemble a compact contact string from available URLs."""
     ci = data.get("contact_info", {})
@@ -134,7 +147,7 @@ def generate_pdf(data: dict) -> bytes:
     about = data.get("about_me", "").strip()
     if about:
         pdf.section_heading("About Me")
-        pdf.body(about)
+        pdf.body(_safe(about))
 
     # ---- Experience -------------------------------------------------------
     grouped = data.get("grouped_experience", [])
@@ -154,7 +167,7 @@ def generate_pdf(data: dict) -> bytes:
 
                 details = role.get("details", "").strip()
                 if details:
-                    pdf.muted_cell(details, indent=4)
+                    pdf.muted_cell(_safe(details), indent=4)
 
             pdf.ln(3)
 
@@ -201,6 +214,21 @@ def generate_pdf(data: dict) -> bytes:
         for row in rows:
             pdf.cell(0, 5, "  |  ".join(row), new_x=XPos.LMARGIN, new_y=YPos.NEXT)
         pdf.ln(1)
+
+    # ---- Domain Expertise -------------------------------------------------
+    domains = data.get("domain_knowledge", [])
+    if domains:
+        pdf.section_heading("Domain Expertise")
+        for domain in domains:
+            pdf.set_font("Helvetica", "B", 9)
+            pdf.set_text_color(*ResumePDF.TEXT)
+            pdf.cell(0, 5, domain.get("name", ""), new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+
+            desc = domain.get("description", "").strip()
+            if desc:
+                pdf.muted_cell(_safe(desc), indent=2)
+
+            pdf.ln(2)
 
     # ---- Certifications ---------------------------------------------------
     certs = data.get("certifications", [])
