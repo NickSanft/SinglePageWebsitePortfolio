@@ -4,12 +4,60 @@ import json
 import datetime
 import platform
 import subprocess
+import re
 import requests
 import zipfile
 import io
 from urllib.parse import urljoin
 
 app = Flask(__name__, static_url_path='', static_folder='output')
+
+
+def fetch_latest_bandcamp_album(artist_url):
+    """Fetch the latest album from a Bandcamp artist's discography page.
+    Returns a dict with artwork_url (embed), music_url, and music_title,
+    or None if fetching fails."""
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
+    try:
+        # Get discography page — albums appear newest first
+        resp = requests.get(artist_url.rstrip('/') + '/music', headers=headers, timeout=10)
+        resp.raise_for_status()
+
+        album_match = re.search(r'<a href="(/album/[^"]+)">', resp.text)
+        if not album_match:
+            return None
+
+        album_path = album_match.group(1)
+        album_url = artist_url.rstrip('/') + album_path
+
+        # Get album page for embed ID and title
+        resp = requests.get(album_url, headers=headers, timeout=10)
+        resp.raise_for_status()
+
+        id_match = re.search(
+            r'<meta\s+name="bc-page-properties"\s+content="\{&quot;item_type&quot;:&quot;a&quot;,&quot;item_id&quot;:(\d+)',
+            resp.text
+        )
+        if not id_match:
+            return None
+        album_id = id_match.group(1)
+
+        title_match = re.search(r'<title>([^|]+)\|', resp.text)
+        title = title_match.group(1).strip() if title_match else album_path.replace('/album/', '').replace('-', ' ').title()
+
+        embed_url = (
+            f"https://bandcamp.com/EmbeddedPlayer/album={album_id}"
+            f"/size=large/bgcol=181a1b/linkcol=056cc4/tracklist=false/artwork=small/transparent=true/"
+        )
+
+        return {
+            "artwork_url": embed_url,
+            "music_url": album_url,
+            "music_title": title,
+        }
+    except Exception as e:
+        print(f"Warning: could not fetch latest Bandcamp album — {e}")
+        return None
 
 
 # Load and process data from the external JSON file
@@ -190,6 +238,13 @@ def load_data():
         v for k, v in contact.items()
         if k in ("github_url", "linkedin_url") and v
     ]
+
+    # Fetch latest Bandcamp album (falls back to existing latest_music in JSON)
+    bandcamp_url = contact.get("bandcamp_url", "")
+    if bandcamp_url:
+        latest = fetch_latest_bandcamp_album(bandcamp_url)
+        if latest:
+            data["latest_music"] = latest
 
     return data
 

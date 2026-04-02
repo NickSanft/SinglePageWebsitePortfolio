@@ -87,6 +87,7 @@
             syncLivePreviews();
             updateCodeViewer();
             updateWCAG();
+            if (typeof updateDuolingoCardTheme === 'function') updateDuolingoCardTheme();
         }
 
         function applyInteractiveCardEffect() {
@@ -338,6 +339,47 @@
         .gh-stat-card { background-color: var(--color-card-background); transition: transform 0.2s; }
         .gh-skeleton { color: transparent; background: linear-gradient(90deg, rgba(128,128,128,0.15) 25%, rgba(128,128,128,0.3) 50%, rgba(128,128,128,0.15) 75%); background-size: 200% 100%; animation: gh-shimmer 1.4s infinite; border-radius: 4px; min-width: 2rem; }
         @keyframes gh-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        /* === FUN SECTION TOGGLE === */
+        .fun-wrapper { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.6s ease-in-out; }
+        .fun-wrapper.fun-visible { grid-template-rows: 1fr; }
+        .fun-wrapper > div { overflow: hidden; }
+
+        .fun-toggle-btn {
+            position: relative;
+            padding: 0.75rem 2rem;
+            border-radius: 9999px;
+            border: 2px solid var(--color-accent);
+            color: var(--color-accent);
+            background: transparent;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .fun-toggle-btn:hover {
+            background: var(--color-accent);
+            color: white;
+            box-shadow: 0 0 20px rgba(var(--color-accent), 0.3);
+        }
+        .fun-toggle-btn .fun-icon {
+            display: inline-block;
+            transition: transform 0.4s ease;
+        }
+        .fun-toggle-btn.active .fun-icon {
+            transform: rotate(180deg);
+        }
+        @keyframes subtle-pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(99, 167, 250, 0.4); }
+            50% { box-shadow: 0 0 0 8px rgba(99, 167, 250, 0); }
+        }
+        .fun-toggle-btn:not(.active) {
+            animation: subtle-pulse 3s ease-in-out infinite;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .fun-toggle-btn { animation: none !important; }
+            .fun-wrapper { transition: none !important; }
+        }
     </style>
 </head>
 <body class="bg-[var(--color-background)] text-[var(--color-text-primary)] font-sans">
@@ -628,10 +670,51 @@
             </div>
         </section>
 
-        <section id="play" class="py-24 px-4 fade-in-section">
-          <div id="play-controls" class="max-w-5xl mx-auto text-center">
-            <h2 class="font-heading text-4xl font-bold mb-4">{{ sandbox_title }}</h2>
-            <p class="max-w-3xl mx-auto mb-8 text-[var(--color-text-secondary)]">{{ sandbox_description }}</p>
+        <section id="fun" class="py-24 px-4">
+          <div class="fun-wrapper" id="fun-wrapper">
+            <div>
+              <div class="max-w-5xl mx-auto">
+                <h2 class="font-heading text-4xl font-bold mb-4 text-center">{{ fun_section_title }}</h2>
+                <p class="max-w-3xl mx-auto mb-16 text-[var(--color-text-secondary)] text-center">{{ fun_section_subtitle }}</p>
+
+                <!-- Music Subsection -->
+                {% if latest_music %}
+                <div class="mb-20">
+                  <h3 class="font-heading text-2xl font-semibold mb-8 text-center"><i class="fas fa-music mr-2 text-[var(--color-accent)]"></i>Music</h3>
+                  <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <div class="rounded-xl overflow-hidden shadow-lg">
+                      <iframe style="border: 0; width: 100%; height: 350px;" src="{{ latest_music.artwork_url }}" seamless loading="lazy" title="Latest album on Bandcamp">
+                        <a href="{{ latest_music.music_url }}">{{ latest_music.music_title }}</a>
+                      </iframe>
+                    </div>
+                    <div class="text-center md:text-left">
+                      <p class="text-lg text-[var(--color-text-primary)] mb-4">{{ fun_music_blurb }}</p>
+                      <p class="text-[var(--color-text-secondary)] mb-6">Latest release: <strong>{{ latest_music.music_title }}</strong></p>
+                      {% if contact_info.bandcamp_url %}
+                      <a href="{{ contact_info.bandcamp_url }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)] font-semibold transition-colors">
+                        <i class="fab fa-bandcamp"></i> Listen on Bandcamp
+                      </a>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+                {% endif %}
+
+                <!-- Language Learning Subsection -->
+                {% if duolingo_username %}
+                <div class="mb-20">
+                  <h3 class="font-heading text-2xl font-semibold mb-8 text-center"><i class="fas fa-language mr-2 text-[var(--color-accent)]"></i>Language Learning</h3>
+                  <div class="flex flex-col items-center">
+                    <img id="duolingo-card" src="https://duolingo-stats-card.vercel.app/api?username={{ duolingo_username }}&theme=dark" alt="Duolingo Stats for {{ duolingo_username }}" class="rounded-xl shadow-lg max-w-full" style="max-width: 500px;">
+                    <p class="mt-4 text-[var(--color-text-secondary)]">Currently learning Portuguese on <a href="https://www.duolingo.com/profile/{{ duolingo_username }}" target="_blank" rel="noopener noreferrer" class="text-[var(--color-accent)] hover:underline">Duolingo</a>.</p>
+                  </div>
+                </div>
+                {% endif %}
+
+                <!-- Sandbox Subsection (moved from standalone play section) -->
+                <div id="play-controls" class="text-center">
+                  <h3 class="font-heading text-2xl font-semibold mb-4 text-center"><i class="fas fa-gamepad mr-2 text-[var(--color-accent)]"></i>{{ sandbox_title }}</h3>
+                  <p class="max-w-3xl mx-auto mb-8 text-[var(--color-text-secondary)]">{{ sandbox_description }}</p>
 
             <div class="p-8 rounded-lg bg-[var(--color-card-background)] shadow-inner mb-8">
                 <h3 class="font-heading text-2xl font-semibold mb-1 text-center">Theme Presets</h3>
@@ -706,7 +789,6 @@
                         <li data-section-id="certifications" tabindex="0" aria-roledescription="Draggable section" aria-grabbed="false" class="p-3 rounded-lg shadow-md cursor-grab bg-gray-100 dark:bg-gray-800 text-[var(--color-text-primary)] flex items-center focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"><i class="fas fa-grip-vertical mr-3 text-gray-400"></i>Certifications</li>
                         <li data-section-id="projects" tabindex="0" aria-roledescription="Draggable section" aria-grabbed="false" class="p-3 rounded-lg shadow-md cursor-grab bg-gray-100 dark:bg-gray-800 text-[var(--color-text-primary)] flex items-center focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"><i class="fas fa-grip-vertical mr-3 text-gray-400"></i>Projects</li>
                         <li data-section-id="contact" tabindex="0" aria-roledescription="Draggable section" aria-grabbed="false" class="p-3 rounded-lg shadow-md cursor-grab bg-gray-100 dark:bg-gray-800 text-[var(--color-text-primary)] flex items-center focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"><i class="fas fa-grip-vertical mr-3 text-gray-400"></i>Contact</li>
-                        <li data-section-id="play" tabindex="0" aria-roledescription="Draggable section" aria-grabbed="false" class="p-3 rounded-lg shadow-md cursor-grab bg-gray-100 dark:bg-gray-800 text-[var(--color-text-primary)] flex items-center focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"><i class="fas fa-grip-vertical mr-3 text-gray-400"></i>Sandbox</li>
                     </ol>
                 </div>
             </div>
@@ -816,6 +898,9 @@
                     <i class="fas fa-undo mr-2"></i>Reset All Customizations
                 </button>
             </div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -849,6 +934,13 @@
           </div>
         </section>
     </main>
+
+    <div class="py-10 text-center">
+        <button onclick="toggleFunSection()" id="fun-toggle" class="fun-toggle-btn" aria-expanded="false" aria-controls="fun-wrapper">
+            <i class="fas fa-wand-magic-sparkles fun-icon mr-2"></i>
+            <span id="fun-toggle-text">{{ fun_toggle_text_show }}</span>
+        </button>
+    </div>
 
     <footer class="py-8 text-center text-[var(--color-text-secondary)] border-t border-gray-200 dark:border-gray-700">
         <p>&copy; {{ copyright_string }} {{ copyright_name }}. All rights reserved.</p>
@@ -1388,12 +1480,53 @@ function copyEmail(email) {
     });
 }
 
+// ── Fun Section Toggle ──────────────────────────────────────────
+function toggleFunSection() {
+    const wrapper = document.getElementById('fun-wrapper');
+    const btn = document.getElementById('fun-toggle');
+    const text = document.getElementById('fun-toggle-text');
+    const isVisible = wrapper.classList.toggle('fun-visible');
+    btn.classList.toggle('active', isVisible);
+    btn.setAttribute('aria-expanded', isVisible);
+    text.textContent = isVisible ? {{ fun_toggle_text_hide | tojson }} : {{ fun_toggle_text_show | tojson }};
+    localStorage.setItem('funSectionVisible', isVisible ? 'true' : 'false');
+
+    if (isVisible) {
+        // Trigger fade-in observer for elements inside the fun section
+        document.querySelectorAll('#fun .fade-in-section').forEach(el => el.classList.add('is-visible'));
+        // Scroll to the fun section smoothly
+        setTimeout(() => document.getElementById('fun').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+    }
+}
+
+function updateDuolingoCardTheme() {
+    const card = document.getElementById('duolingo-card');
+    if (!card) return;
+    const isDark = document.documentElement.classList.contains('dark');
+    const src = card.getAttribute('src');
+    card.setAttribute('src', src.replace(/theme=\w+/, 'theme=' + (isDark ? 'dark' : 'light')));
+}
+
 window.addEventListener('DOMContentLoaded', () => {
   const savedTheme = localStorage.getItem('theme');
   if (savedTheme) setMode(savedTheme);
 
   applySavedThemeColors();
   updatePickers();
+
+  // Restore fun section visibility
+  if (localStorage.getItem('funSectionVisible') === 'true') {
+      const wrapper = document.getElementById('fun-wrapper');
+      const btn = document.getElementById('fun-toggle');
+      const text = document.getElementById('fun-toggle-text');
+      wrapper.classList.add('fun-visible');
+      btn.classList.add('active');
+      btn.setAttribute('aria-expanded', 'true');
+      text.textContent = {{ fun_toggle_text_hide | tojson }};
+  }
+
+  // Set initial Duolingo card theme
+  updateDuolingoCardTheme();
 });
 </script>
 
