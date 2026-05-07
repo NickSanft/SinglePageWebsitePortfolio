@@ -1,4 +1,4 @@
-from flask import Flask, render_template, send_from_directory, Response
+from flask import Flask, render_template, send_from_directory, Response, request
 import os
 import json
 import datetime
@@ -77,6 +77,7 @@ def load_data():
                 {"value": 25, "suffix": "+", "label": "Projects Shipped"},
                 {"value": 10, "suffix": "+", "label": "Technologies"}
             ],
+            "hero_effect": "blobs",
             # === NEW: Professional framing for the interactive section ===
             "sandbox_title": "Interactive UI Sandbox",
             "sandbox_description": "This interactive sandbox showcases a range of front-end development skills. The theme customization is built with CSS variables and managed via JavaScript's localStorage for state persistence. The section reordering utilizes the SortableJS library and direct DOM manipulation to provide a dynamic user experience, complete with keyboard accessibility.",
@@ -140,16 +141,17 @@ def load_data():
                  "details": "Gained hands-on experience with version control and agile methodologies."}
             ],
             "skills": [
-                {"name": "Python", "icon": "fab fa-python", "proficiency": 92},
-                {"name": "JavaScript", "icon": "fab fa-js", "proficiency": 85},
-                {"name": "React", "icon": "fab fa-react", "proficiency": 78},
-                {"name": "Node.js", "icon": "fab fa-node-js", "proficiency": 75},
-                {"name": "Tailwind CSS", "icon": "fab fa-css3-alt", "proficiency": 88},
-                {"name": "Flask", "icon": "fas fa-flask", "proficiency": 80},
-                {"name": "SQL", "icon": "fas fa-database", "proficiency": 70},
-                {"name": "Git", "icon": "fab fa-git-alt", "proficiency": 90},
-                {"name": "Cloud Computing", "icon": "fas fa-cloud", "proficiency": 65}
+                {"name": "Python", "icon": "fab fa-python", "proficiency": 92, "category": "Languages"},
+                {"name": "JavaScript", "icon": "fab fa-js", "proficiency": 85, "category": "Languages"},
+                {"name": "SQL", "icon": "fas fa-database", "proficiency": 70, "category": "Languages"},
+                {"name": "React", "icon": "fab fa-react", "proficiency": 78, "category": "Frameworks"},
+                {"name": "Node.js", "icon": "fab fa-node-js", "proficiency": 75, "category": "Frameworks"},
+                {"name": "Flask", "icon": "fas fa-flask", "proficiency": 80, "category": "Frameworks"},
+                {"name": "Tailwind CSS", "icon": "fab fa-css3-alt", "proficiency": 88, "category": "Frameworks"},
+                {"name": "Git", "icon": "fab fa-git-alt", "proficiency": 90, "category": "Tools"},
+                {"name": "Cloud Computing", "icon": "fas fa-cloud", "proficiency": 65, "category": "Tools"}
             ],
+            "domain_knowledge": [],
             "certifications": [
                 {
                     "name": "AWS Certified Solutions Architect",
@@ -180,7 +182,16 @@ def load_data():
             },
             "copyright_name": "Your Name",
             "copyright_start_year": 2024,
-            "site_url": ""
+            "site_url": "",
+            "portfolio_name": "Your Name",
+            "sandbox_title": "Interactive UI Sandbox",
+            "sandbox_description": "Customize the theme, typography, and layout to your taste.",
+            "fun_section_title": "Things I'm Into",
+            "fun_section_subtitle": "A peek at what I'm working on outside of code.",
+            "fun_music_blurb": "I make music in my spare time.",
+            "fun_toggle_text_show": "Show the fun stuff",
+            "fun_toggle_text_hide": "Hide the fun stuff",
+            "duolingo_username": ""
         }
         with open("website_data.json", "w", encoding="utf-8") as f:
             json.dump(dummy_data, f, indent=4)
@@ -257,9 +268,20 @@ def load_data():
     return data
 
 
+_VALID_HERO_EFFECTS = {"blobs", "particles", "grain"}
+
+
+def _resolve_hero_effect(data):
+    """Query-param override > JSON value > 'blobs'. Unknown values fall back to 'blobs'."""
+    requested = request.args.get("hero")
+    chosen = requested or data.get("hero_effect") or "blobs"
+    return chosen if chosen in _VALID_HERO_EFFECTS else "blobs"
+
+
 @app.route("/")
 def serve_index():
     data = load_data()
+    data["hero_effect"] = _resolve_hero_effect(data)
     return render_template('index.html', static_root="/static/", pdf_url="/resume.pdf", tailwind_mode="cdn", **data)
 
 
