@@ -444,20 +444,16 @@ def _generate_og_image(data, output_path):
     draw = ImageDraw.Draw(img)
     name_font = _load_og_font("bold", 110)
     sub_font = _load_og_font("regular", 38)
-    label_font = _load_og_font("bold", 22)
 
-    label = (data.get("website_title") or "").upper()[:40]
     name = data.get("hero_title") or "Portfolio"
     sub = data.get("hero_subtitle") or ""
     if len(sub) > 70:
         sub = sub[:67].rstrip() + "..."
 
     margin_x = 80
-    if label:
-        draw.text((margin_x, 195), label, font=label_font, fill=accent)
-    draw.text((margin_x, 235), name, font=name_font, fill=text_primary)
-    draw.text((margin_x, 380), sub, font=sub_font, fill=text_secondary)
-    draw.rectangle([(margin_x, 365), (margin_x + 80, 369)], fill=accent)
+    draw.text((margin_x, 250), name, font=name_font, fill=text_primary)
+    draw.rectangle([(margin_x, 380), (margin_x + 80, 384)], fill=accent)
+    draw.text((margin_x, 400), sub, font=sub_font, fill=text_secondary)
 
     img.save(output_path, "PNG", optimize=True)
 
