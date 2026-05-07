@@ -214,6 +214,41 @@
             host.addEventListener('mouseleave', () => { mouse.x = -9999; mouse.y = -9999; });
         }
 
+        function initKonami() {
+            const SEQ = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+            let i = 0;
+            if (sessionStorage.crtMode === 'on') document.body.classList.add('crt-mode');
+            document.addEventListener('keydown', e => {
+                const expected = SEQ[i];
+                const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+                if (k === expected) {
+                    i++;
+                    if (i === SEQ.length) {
+                        const on = document.body.classList.toggle('crt-mode');
+                        sessionStorage.crtMode = on ? 'on' : 'off';
+                        showCrtToast(on ? '> CRT MODE ENGAGED' : '> CRT MODE DISENGAGED');
+                        i = 0;
+                    }
+                } else {
+                    i = (k === SEQ[0]) ? 1 : 0;
+                }
+            });
+        }
+
+        function showCrtToast(msg) {
+            const existing = document.querySelector('.crt-toast');
+            if (existing) existing.remove();
+            const el = document.createElement('div');
+            el.className = 'crt-toast';
+            el.textContent = msg;
+            document.body.appendChild(el);
+            requestAnimationFrame(() => el.classList.add('crt-toast-visible'));
+            setTimeout(() => {
+                el.classList.remove('crt-toast-visible');
+                setTimeout(() => el.remove(), 400);
+            }, 2200);
+        }
+
         function initProjectVideos() {
             const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
             document.querySelectorAll('.project-video').forEach(video => {
@@ -315,6 +350,7 @@
             initMagneticButtons();
             initHeroParticles();
             initProjectVideos();
+            initKonami();
             updateCodeViewer();
             updateWCAG();
 
@@ -454,6 +490,68 @@
         @media (prefers-reduced-motion: reduce) { .magnetic { transition: none !important; transform: none !important; } }
         /* === PROJECT VIDEO === */
         .project-video { display: block; background: #000; }
+
+        /* === KONAMI CRT MODE === */
+        body.crt-mode {
+            text-shadow: 0.6px 0 0 rgba(255, 0, 80, 0.45), -0.6px 0 0 rgba(0, 200, 255, 0.45);
+        }
+        body.crt-mode::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 9998;
+            background: repeating-linear-gradient(
+                to bottom,
+                transparent 0,
+                transparent 2px,
+                rgba(0, 0, 0, 0.18) 3px,
+                transparent 4px
+            );
+            mix-blend-mode: multiply;
+        }
+        body.crt-mode::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 9999;
+            background:
+                radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.55) 100%),
+                linear-gradient(to bottom, rgba(255,255,255,0.04), transparent 8%);
+            animation: crt-flicker 0.18s steps(2) infinite;
+        }
+        @keyframes crt-flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.94; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            body.crt-mode::after { animation: none !important; }
+        }
+        .crt-toast {
+            position: fixed;
+            bottom: 5rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: rgba(0, 0, 0, 0.9);
+            color: #4ade80;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.85rem;
+            padding: 0.75rem 1.5rem;
+            border: 1px solid #4ade80;
+            border-radius: 4px;
+            text-shadow: 0 0 6px #4ade80;
+            box-shadow: 0 0 20px rgba(74, 222, 128, 0.4);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 10000;
+            transition: opacity 0.3s, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            letter-spacing: 0.05em;
+        }
+        .crt-toast.crt-toast-visible {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
 
         .skill-bar-track { width: 100%; background: rgba(0,0,0,0.08); border-radius: 9999px; height: 4px; overflow: hidden; margin-top: 6px; }
         .dark .skill-bar-track { background: rgba(255,255,255,0.12); }
