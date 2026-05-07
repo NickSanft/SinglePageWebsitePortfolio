@@ -1,3 +1,4 @@
 flask
 requests
 fpdf2
+Pillow

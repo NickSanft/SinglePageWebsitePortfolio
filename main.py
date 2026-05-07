@@ -1,4 +1,4 @@
-from flask import Flask, render_template, send_from_directory, Response, request
+from flask import Flask, render_template, send_from_directory, Response
 import os
 import json
 import datetime
@@ -77,7 +77,6 @@ def load_data():
                 {"value": 25, "suffix": "+", "label": "Projects Shipped"},
                 {"value": 10, "suffix": "+", "label": "Technologies"}
             ],
-            "hero_effect": "blobs",
             # === NEW: Professional framing for the interactive section ===
             "sandbox_title": "Interactive UI Sandbox",
             "sandbox_description": "This interactive sandbox showcases a range of front-end development skills. The theme customization is built with CSS variables and managed via JavaScript's localStorage for state persistence. The section reordering utilizes the SortableJS library and direct DOM manipulation to provide a dynamic user experience, complete with keyboard accessibility.",
@@ -243,13 +242,17 @@ def load_data():
     else:
         data["copyright_string"] = str(current_year)
 
-    # Compute absolute OG image URL
+    # OG image: prefer auto-generated og.png if present, else fall back to hero image
     site_url = data.get("site_url", "")
-    hero_image = data.get("hero_image_url", "")
-    if site_url and hero_image and not hero_image.startswith("http"):
-        data["og_image_url"] = urljoin(site_url, hero_image)
+    og_path = os.path.join("output", "og.png")
+    if os.path.exists(og_path):
+        data["og_image_url"] = urljoin(site_url, "og.png") if site_url else "og.png"
     else:
-        data["og_image_url"] = hero_image
+        hero_image = data.get("hero_image_url", "")
+        if site_url and hero_image and not hero_image.startswith("http"):
+            data["og_image_url"] = urljoin(site_url, hero_image)
+        else:
+            data["og_image_url"] = hero_image
 
     # Compute sameAs list for JSON-LD
     contact = data.get("contact_info", {})
@@ -268,20 +271,9 @@ def load_data():
     return data
 
 
-_VALID_HERO_EFFECTS = {"blobs", "particles", "grain"}
-
-
-def _resolve_hero_effect(data):
-    """Query-param override > JSON value > 'blobs'. Unknown values fall back to 'blobs'."""
-    requested = request.args.get("hero")
-    chosen = requested or data.get("hero_effect") or "blobs"
-    return chosen if chosen in _VALID_HERO_EFFECTS else "blobs"
-
-
 @app.route("/")
 def serve_index():
     data = load_data()
-    data["hero_effect"] = _resolve_hero_effect(data)
     return render_template('index.html', static_root="/static/", pdf_url="/resume.pdf", tailwind_mode="cdn", **data)
 
 
@@ -398,6 +390,78 @@ def _build_tailwind_css(cli_path, content_html_paths, output_css_path):
                 pass
 
 
+_OG_FONT_CANDIDATES = {
+    "bold":    ["Inter-Bold.ttf", "arialbd.ttf", "Arial Bold.ttf", "DejaVuSans-Bold.ttf", "Helvetica-Bold.ttf"],
+    "regular": ["Inter-Regular.ttf", "arial.ttf", "Arial.ttf", "DejaVuSans.ttf", "Helvetica.ttf"],
+}
+
+
+def _load_og_font(weight, size):
+    """Return a TrueType font in the requested weight at `size`, or Pillow's bundled default."""
+    from PIL import ImageFont
+    for name in _OG_FONT_CANDIDATES[weight]:
+        try:
+            return ImageFont.truetype(name, size)
+        except (OSError, IOError):
+            continue
+    return ImageFont.load_default(size=size)
+
+
+def _hex_rgb(hex_str, default=(0, 0, 0)):
+    h = (hex_str or "").lstrip("#")
+    if len(h) == 3:
+        h = "".join(c * 2 for c in h)
+    if len(h) != 6:
+        return default
+    try:
+        return (int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16))
+    except ValueError:
+        return default
+
+
+def _generate_og_image(data, output_path):
+    """Render a 1200x630 PNG: name + subtitle on theme-colored background with accent glow."""
+    from PIL import Image, ImageDraw, ImageFilter
+
+    W, H = 1200, 630
+    dark = data.get("theme_colors", {}).get("dark", {})
+    bg = _hex_rgb(dark.get("background"), (17, 24, 39))
+    text_primary = _hex_rgb(dark.get("text_primary"), (249, 250, 251))
+    text_secondary = _hex_rgb(dark.get("text_secondary"), (209, 213, 219))
+    accent = _hex_rgb(dark.get("accent"), (147, 197, 253))
+    accent_hover = _hex_rgb(dark.get("accent_hover"), (96, 165, 250))
+
+    img = Image.new("RGB", (W, H), bg)
+
+    # Two soft accent glows for depth (lower-right + upper-left)
+    glow = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    g = ImageDraw.Draw(glow)
+    g.ellipse([(W * 0.55, H * 0.25), (W * 1.15, H * 1.15)], fill=accent + (170,))
+    g.ellipse([(-W * 0.15, -H * 0.25), (W * 0.35, H * 0.45)], fill=accent_hover + (90,))
+    glow = glow.filter(ImageFilter.GaussianBlur(radius=90))
+    img = Image.alpha_composite(img.convert("RGBA"), glow).convert("RGB")
+
+    draw = ImageDraw.Draw(img)
+    name_font = _load_og_font("bold", 110)
+    sub_font = _load_og_font("regular", 38)
+    label_font = _load_og_font("bold", 22)
+
+    label = (data.get("website_title") or "").upper()[:40]
+    name = data.get("hero_title") or "Portfolio"
+    sub = data.get("hero_subtitle") or ""
+    if len(sub) > 70:
+        sub = sub[:67].rstrip() + "..."
+
+    margin_x = 80
+    if label:
+        draw.text((margin_x, 195), label, font=label_font, fill=accent)
+    draw.text((margin_x, 235), name, font=name_font, fill=text_primary)
+    draw.text((margin_x, 380), sub, font=sub_font, fill=text_secondary)
+    draw.rectangle([(margin_x, 365), (margin_x + 80, 369)], fill=accent)
+
+    img.save(output_path, "PNG", optimize=True)
+
+
 def write_static_html():
     """
     Generates the static HTML file and downloads remote assets to a local
@@ -454,6 +518,17 @@ def write_static_html():
             print(f"Error downloading Sortable.min.js: {e}")
 
     data = load_data()
+
+    # --- Open Graph image ---
+    og_output_path = os.path.join(output_dir, "og.png")
+    try:
+        _generate_og_image(data, og_output_path)
+        print(f"og.png written ({os.path.getsize(og_output_path) // 1024} KB).")
+        # Re-resolve og_image_url now that the file exists
+        site_url = data.get("site_url", "")
+        data["og_image_url"] = urljoin(site_url, "og.png") if site_url else "og.png"
+    except Exception as e:
+        print(f"Warning: could not generate og.png — {e}")
 
     # --- Tailwind CSS build ---
     # Step 1: render with CDN mode so all class names are in the HTML for scanning

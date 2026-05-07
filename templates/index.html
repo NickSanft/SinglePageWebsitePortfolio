@@ -354,45 +354,6 @@
             background: rgba(17, 24, 39, 0.65);
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
-        /* === HERO BLOBS === */
-        .hero-blob {
-            position: absolute;
-            border-radius: 9999px;
-            filter: blur(72px);
-            opacity: 0.18;
-            pointer-events: none;
-        }
-        .dark .hero-blob { opacity: 0.22; }
-        .hero-blob-1 {
-            width: 45%; height: 65%;
-            top: -15%; left: -8%;
-            background: var(--color-accent);
-            animation: blobDrift1 12s ease-in-out infinite alternate;
-        }
-        .hero-blob-2 {
-            width: 35%; height: 55%;
-            bottom: -15%; right: 5%;
-            background: var(--color-accent-hover);
-            animation: blobDrift2 15s ease-in-out infinite alternate;
-        }
-        .hero-blob-3 {
-            width: 20%; height: 30%;
-            top: 30%; left: 40%;
-            background: var(--color-accent);
-            animation: blobDrift1 9s ease-in-out infinite alternate-reverse;
-            opacity: 0.1;
-        }
-        @keyframes blobDrift1 {
-            0%   { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(40px, -30px) scale(1.12); }
-        }
-        @keyframes blobDrift2 {
-            0%   { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(-30px, 40px) scale(0.9); }
-        }
-        @media (prefers-reduced-motion: reduce) {
-            .hero-blob { animation: none !important; }
-        }
         /* === HERO: PARTICLE CONSTELLATION === */
         .hero-particles {
             position: absolute;
@@ -402,56 +363,6 @@
             pointer-events: none;
             z-index: 1;
             opacity: 0.85;
-        }
-        /* === HERO: FILM GRAIN + SCANLINES === */
-        .hero-grain {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            z-index: 2;
-            opacity: 0.18;
-            mix-blend-mode: overlay;
-            background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
-            animation: grain-shift 1.2s steps(8) infinite;
-        }
-        .dark .hero-grain { opacity: 0.28; mix-blend-mode: soft-light; }
-        @keyframes grain-shift {
-            0%   { transform: translate(0, 0); }
-            12%  { transform: translate(-4%, 3%); }
-            25%  { transform: translate(3%, -5%); }
-            37%  { transform: translate(-2%, 6%); }
-            50%  { transform: translate(5%, -3%); }
-            62%  { transform: translate(-6%, 2%); }
-            75%  { transform: translate(2%, 4%); }
-            87%  { transform: translate(-3%, -2%); }
-            100% { transform: translate(0, 0); }
-        }
-        .hero-scanlines {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            z-index: 2;
-            background: repeating-linear-gradient(
-                to bottom,
-                transparent 0,
-                transparent 2px,
-                rgba(0, 0, 0, 0.05) 3px,
-                transparent 4px
-            );
-            mix-blend-mode: multiply;
-        }
-        .dark .hero-scanlines {
-            background: repeating-linear-gradient(
-                to bottom,
-                transparent 0,
-                transparent 2px,
-                rgba(255, 255, 255, 0.04) 3px,
-                transparent 4px
-            );
-            mix-blend-mode: screen;
-        }
-        @media (prefers-reduced-motion: reduce) {
-            .hero-grain { animation: none !important; }
         }
         #scroll-progress-bar { position: fixed; top: 0; left: 0; height: 4px; background-color: var(--color-accent); width: 0%; z-index: 50; transition: width 0.1s linear; }
         #back-to-top-btn { position: fixed; bottom: 1.5rem; right: 1.5rem; background-color: var(--color-accent); color: white; padding: 0.75rem; border-radius: 9999px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out, background-color 0.3s; opacity: 0; visibility: hidden; z-index: 40; cursor: pointer; }
@@ -757,18 +668,7 @@
 
     <main id="main-content" class="pt-20">
         <section id="about" class="py-24 md:py-32 px-4 fade-in-section relative overflow-hidden">
-            {% set effect = hero_effect | default('blobs') %}
-            {% if effect == 'particles' %}
             <canvas class="hero-particles" aria-hidden="true"></canvas>
-            {% else %}
-            <div class="hero-blob hero-blob-1" aria-hidden="true"></div>
-            <div class="hero-blob hero-blob-2" aria-hidden="true"></div>
-            <div class="hero-blob hero-blob-3" aria-hidden="true"></div>
-            {% endif %}
-            {% if effect == 'grain' %}
-            <div class="hero-grain" aria-hidden="true"></div>
-            <div class="hero-scanlines" aria-hidden="true"></div>
-            {% endif %}
             <div class="max-w-6xl mx-auto flex flex-col-reverse md:flex-row items-center justify-center gap-10 md:gap-16 relative z-10">
                 <div class="text-center md:text-left stagger-item">
                     <h1 class="font-heading text-4xl md:text-6xl font-bold mb-2 text-[var(--color-text-primary)]">{{ hero_title }}</h1>
