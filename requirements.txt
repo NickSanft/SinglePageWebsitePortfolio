@@ -2,3 +2,4 @@ flask
 requests
 fpdf2
 Pillow
+markdown

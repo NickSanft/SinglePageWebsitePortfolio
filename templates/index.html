@@ -214,6 +214,17 @@
             host.addEventListener('mouseleave', () => { mouse.x = -9999; mouse.y = -9999; });
         }
 
+        function initProjectVideos() {
+            const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            document.querySelectorAll('.project-video').forEach(video => {
+                const card = video.closest('.group') || video.parentElement;
+                if (!card) return;
+                if (reduced) { video.removeAttribute('autoplay'); return; }
+                card.addEventListener('mouseenter', () => { video.play().catch(() => {}); });
+                card.addEventListener('mouseleave', () => { video.pause(); video.currentTime = 0; });
+            });
+        }
+
         function initMagneticButtons() {
             if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
             document.querySelectorAll('.magnetic').forEach(btn => {
@@ -303,6 +314,7 @@
             initActiveNavHighlight();
             initMagneticButtons();
             initHeroParticles();
+            initProjectVideos();
             updateCodeViewer();
             updateWCAG();
 
@@ -440,6 +452,8 @@
         /* === MAGNETIC BUTTON === */
         .magnetic { transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1); will-change: transform; }
         @media (prefers-reduced-motion: reduce) { .magnetic { transition: none !important; transform: none !important; } }
+        /* === PROJECT VIDEO === */
+        .project-video { display: block; background: #000; }
 
         .skill-bar-track { width: 100%; background: rgba(0,0,0,0.08); border-radius: 9999px; height: 4px; overflow: hidden; margin-top: 6px; }
         .dark .skill-bar-track { background: rgba(255,255,255,0.12); }
@@ -517,12 +531,31 @@
     </div>
 {% endmacro %}
 
+{% macro project_media(project, classes='') %}
+    {% if project.video_url %}
+    <video class="project-video {{ classes }}" muted loop playsinline preload="metadata"
+        {% if project.video_poster or project.image_url %}poster="{{ project.video_poster or project.image_url }}"{% endif %}
+        src="{{ project.video_url }}" aria-label="{{ project.title }} demo"></video>
+    {% elif project.image_url %}
+    <img src="{{ project.image_url }}" alt="{{ project.title }}" class="{{ classes }}">
+    {% endif %}
+{% endmacro %}
+
 {% macro project_card(project, is_featured=false) %}
+    {% set has_cs = project.has_case_study %}
+    {% set link = (projects_root | default('/projects/')) ~ project.slug ~ '/' if has_cs else project.url %}
+    {% set link_label = 'Read case study' if has_cs else 'View Project' %}
+    {% set link_icon = 'fas fa-arrow-right' if has_cs else 'fas fa-external-link-alt' %}
     {% if is_featured %}
         <div class="mb-16 stagger-item">
-            <div class="interactive-card rounded-lg shadow-xl overflow-hidden md:flex transform hover:-translate-y-2 transition-transform duration-300">
-                <div class="md:w-1/2 bg-gray-200 dark:bg-gray-700">
-                    <img src="{{ project.image_url }}" alt="{{ project.title }} screenshot" class="object-cover w-full h-full min-h-[250px]">
+            <div class="interactive-card rounded-lg shadow-xl overflow-hidden md:flex transform hover:-translate-y-2 transition-transform duration-300 group">
+                <div class="md:w-1/2 bg-gray-200 dark:bg-gray-700 relative">
+                    {{ project_media(project, 'object-cover w-full h-full min-h-[250px]') }}
+                    {% if has_cs %}
+                    <span class="absolute top-3 left-3 inline-flex items-center gap-1 bg-[var(--color-accent)] text-white text-xs font-semibold px-2.5 py-1 rounded-full shadow-md">
+                        <i class="fas fa-book-open text-[10px]"></i> Case study
+                    </span>
+                    {% endif %}
                 </div>
                 <div class="p-8 md:w-1/2 flex flex-col justify-center">
                     <div>
@@ -536,9 +569,9 @@
                             <span class="bg-blue-100 text-blue-800 text-sm font-semibold px-3 py-1 rounded-full dark:bg-blue-900 dark:text-blue-200">{{ tech }}</span>
                             {% endfor %}
                         </div>
-                        {% if project.url %}
-                        <a href="{{ project.url }}" target="_blank" rel="noopener noreferrer" class="inline-block mt-2 font-semibold text-[var(--color-accent)] hover:underline">
-                            View Project <i class="fas fa-external-link-alt ml-1 text-xs"></i>
+                        {% if link %}
+                        <a href="{{ link }}" {% if not has_cs %}target="_blank" rel="noopener noreferrer"{% endif %} class="inline-block mt-2 font-semibold text-[var(--color-accent)] hover:underline">
+                            {{ link_label }} <i class="{{ link_icon }} ml-1 text-xs"></i>
                         </a>
                         {% endif %}
                     </div>
@@ -551,23 +584,25 @@
             <div class="relative h-40 overflow-hidden">
                 <iframe src="/" title="Live preview of {{ project.title }}" loading="lazy" class="live-preview-iframe absolute top-0 left-0 border-0 pointer-events-none bg-white" style="width: 1280px; height: 900px; transform: scale(0.38); transform-origin: top left;"></iframe>
                 <div class="absolute inset-0 bg-[var(--color-accent)] opacity-0 group-hover:opacity-90 transition-opacity duration-300 flex items-center justify-center">
-                    {% if project.url %}
-                    <a href="{{ project.url }}" target="_blank" rel="noopener noreferrer" class="text-white font-bold text-base border-2 border-white px-5 py-2 rounded-lg hover:bg-white hover:text-[var(--color-accent)] transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
-                        View Project <i class="fas fa-external-link-alt ml-1 text-xs"></i>
+                    {% if link %}
+                    <a href="{{ link }}" {% if not has_cs %}target="_blank" rel="noopener noreferrer"{% endif %} class="text-white font-bold text-base border-2 border-white px-5 py-2 rounded-lg hover:bg-white hover:text-[var(--color-accent)] transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
+                        {{ link_label }} <i class="{{ link_icon }} ml-1 text-xs"></i>
                     </a>
                     {% endif %}
                 </div>
+                {% if has_cs %}<span class="absolute top-3 left-3 inline-flex items-center gap-1 bg-[var(--color-accent)] text-white text-[10px] font-semibold px-2 py-0.5 rounded-full shadow"><i class="fas fa-book-open text-[9px]"></i> Case study</span>{% endif %}
             </div>
-            {% elif project.image_url %}
+            {% elif project.image_url or project.video_url %}
             <div class="relative h-40 overflow-hidden">
-                <img src="{{ project.image_url }}" alt="{{ project.title }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                {{ project_media(project, 'w-full h-full object-cover transition-transform duration-500 group-hover:scale-110') }}
                 <div class="absolute inset-0 bg-[var(--color-accent)] opacity-0 group-hover:opacity-90 transition-opacity duration-300 flex items-center justify-center">
-                    {% if project.url %}
-                    <a href="{{ project.url }}" target="_blank" rel="noopener noreferrer" class="text-white font-bold text-base border-2 border-white px-5 py-2 rounded-lg hover:bg-white hover:text-[var(--color-accent)] transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
-                        View Project <i class="fas fa-external-link-alt ml-1 text-xs"></i>
+                    {% if link %}
+                    <a href="{{ link }}" {% if not has_cs %}target="_blank" rel="noopener noreferrer"{% endif %} class="text-white font-bold text-base border-2 border-white px-5 py-2 rounded-lg hover:bg-white hover:text-[var(--color-accent)] transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
+                        {{ link_label }} <i class="{{ link_icon }} ml-1 text-xs"></i>
                     </a>
                     {% endif %}
                 </div>
+                {% if has_cs %}<span class="absolute top-3 left-3 inline-flex items-center gap-1 bg-[var(--color-accent)] text-white text-[10px] font-semibold px-2 py-0.5 rounded-full shadow"><i class="fas fa-book-open text-[9px]"></i> Case study</span>{% endif %}
             </div>
             {% endif %}
             <div class="p-6 flex flex-col flex-grow">
@@ -583,9 +618,9 @@
                         {% endfor %}
                     </div>
                 </div>
-                {% if project.url and not project.image_url %}
-                <a href="{{ project.url }}" target="_blank" rel="noopener noreferrer" class="font-semibold text-[var(--color-accent)] hover:underline self-start text-sm">
-                    View Project <i class="fas fa-external-link-alt ml-1 text-xs"></i>
+                {% if link and not (project.image_url or project.video_url) %}
+                <a href="{{ link }}" {% if not has_cs %}target="_blank" rel="noopener noreferrer"{% endif %} class="font-semibold text-[var(--color-accent)] hover:underline self-start text-sm">
+                    {{ link_label }} <i class="{{ link_icon }} ml-1 text-xs"></i>
                 </a>
                 {% endif %}
             </div>

@@ -13,6 +13,20 @@ from urllib.parse import urljoin
 app = Flask(__name__, static_url_path='', static_folder='output')
 
 
+def _slugify(s):
+    """Lowercase, replace non-alphanumeric runs with single hyphens, strip edges."""
+    s = (s or "").lower().strip()
+    s = re.sub(r"[^a-z0-9]+", "-", s)
+    return s.strip("-")
+
+
+def _render_case_study(md_path):
+    """Read a Markdown file and return rendered HTML."""
+    import markdown
+    with open(md_path, "r", encoding="utf-8") as f:
+        return markdown.markdown(f.read(), extensions=["fenced_code", "tables", "sane_lists"])
+
+
 def fetch_latest_bandcamp_album(artist_url):
     """Fetch the latest album from a Bandcamp artist's discography page.
     Returns a dict with artwork_url (embed), music_url, and music_title,
@@ -198,10 +212,22 @@ def load_data():
     with open("website_data.json", "r", encoding="utf-8") as f:
         data = json.load(f)
 
-    # Separate featured project from others
+    # Enrich projects: slug + case_study (rendered markdown if case_studies/<slug>.md exists)
     projects = data.get("projects", [])
+    for p in projects:
+        if not p.get("slug"):
+            p["slug"] = _slugify(p.get("title", ""))
+        md_path = os.path.join("case_studies", f"{p['slug']}.md") if p["slug"] else None
+        if md_path and os.path.exists(md_path):
+            p["case_study_html"] = _render_case_study(md_path)
+            p["has_case_study"] = True
+        else:
+            p["has_case_study"] = False
+
+    # Separate featured project from others
     data["featured_project"] = next((p for p in projects if p.get("featured")), None)
     data["other_projects"] = [p for p in projects if not p.get("featured")]
+    data["projects_with_case_studies"] = [p for p in projects if p.get("has_case_study")]
 
     # Group experience by company
     grouped_experience = []
@@ -274,7 +300,17 @@ def load_data():
 @app.route("/")
 def serve_index():
     data = load_data()
-    return render_template('index.html', static_root="/static/", pdf_url="/resume.pdf", tailwind_mode="cdn", **data)
+    return render_template('index.html', static_root="/static/", pdf_url="/resume.pdf", projects_root="/projects/", tailwind_mode="cdn", **data)
+
+
+@app.route("/projects/<slug>/")
+def serve_case_study(slug):
+    data = load_data()
+    project = next((p for p in data.get("projects", []) if p.get("slug") == slug and p.get("has_case_study")), None)
+    if not project:
+        from flask import abort
+        abort(404)
+    return render_template('case_study.html', static_root="/static/", home_url="/", tailwind_mode="cdn", project=project, **data)
 
 
 _FALLBACK_404_DATA = {
@@ -530,8 +566,14 @@ def write_static_html():
     # Step 1: render with CDN mode so all class names are in the HTML for scanning
     scan_html_path = os.path.join(output_dir, "_scan.html")
     scan_404_path = os.path.join(output_dir, "_scan_404.html")
-    scan_html = render_template('index.html', static_root="static/", pdf_url="resume.pdf", tailwind_mode="cdn", **data)
+    scan_cs_path = os.path.join(output_dir, "_scan_cs.html")
+    scan_html = render_template('index.html', static_root="static/", pdf_url="resume.pdf", projects_root="projects/", tailwind_mode="cdn", **data)
     scan_404 = render_template('404.html', static_root="static/", tailwind_mode="cdn", **data)
+    case_studies = data.get("projects_with_case_studies", [])
+    if case_studies:
+        scan_cs = render_template('case_study.html', static_root="../../static/", home_url="../../", tailwind_mode="cdn", project=case_studies[0], **data)
+        with open(scan_cs_path, "w", encoding="utf-8") as f:
+            f.write(scan_cs)
     with open(scan_html_path, "w", encoding="utf-8") as f:
         f.write(scan_html)
     with open(scan_404_path, "w", encoding="utf-8") as f:
@@ -539,21 +581,24 @@ def write_static_html():
 
     tailwind_css_path = os.path.join(static_dir, "tailwind.css")
     tailwind_mode = "cdn"
+    scan_inputs = [scan_html_path, scan_404_path]
+    if case_studies:
+        scan_inputs.append(scan_cs_path)
     try:
         cli_path = _get_tailwind_cli(static_dir)
-        _build_tailwind_css(cli_path, [scan_html_path, scan_404_path], tailwind_css_path)
+        _build_tailwind_css(cli_path, scan_inputs, tailwind_css_path)
         tailwind_mode = "built"
     except Exception as e:
         print(f"Tailwind CLI build failed, falling back to CDN bundle: {e}")
     finally:
-        for p in (scan_html_path, scan_404_path):
+        for p in (scan_html_path, scan_404_path, scan_cs_path):
             try:
                 os.remove(p)
             except OSError:
                 pass
 
     # Step 2: render final HTML with the determined tailwind_mode
-    rendered_for_file = render_template('index.html', static_root="static/", pdf_url="resume.pdf", tailwind_mode=tailwind_mode, **data)
+    rendered_for_file = render_template('index.html', static_root="static/", pdf_url="resume.pdf", projects_root="projects/", tailwind_mode=tailwind_mode, **data)
     rendered_404 = render_template('404.html', static_root="static/", tailwind_mode=tailwind_mode, **data)
 
     index_path = os.path.join(output_dir, "index.html")
@@ -561,6 +606,15 @@ def write_static_html():
         f.write(rendered_for_file)
     with open(os.path.join(output_dir, "404.html"), "w", encoding="utf-8") as f:
         f.write(rendered_404)
+
+    # Render case study pages: output/projects/<slug>/index.html
+    for project in case_studies:
+        slug_dir = os.path.join(output_dir, "projects", project["slug"])
+        os.makedirs(slug_dir, exist_ok=True)
+        rendered_cs = render_template('case_study.html', static_root="../../static/", home_url="../../", tailwind_mode=tailwind_mode, project=project, **data)
+        with open(os.path.join(slug_dir, "index.html"), "w", encoding="utf-8") as f:
+            f.write(rendered_cs)
+        print(f"case study written: projects/{project['slug']}/")
 
     # Export resume PDF
     try:
