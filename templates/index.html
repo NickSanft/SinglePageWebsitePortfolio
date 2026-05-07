@@ -90,6 +90,38 @@
             if (typeof updateDuolingoCardTheme === 'function') updateDuolingoCardTheme();
         }
 
+        function animateCounter(el) {
+            const target = parseFloat(el.dataset.target);
+            if (!Number.isFinite(target)) return;
+            const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (reduced) { el.textContent = target; return; }
+            const duration = 1400;
+            const start = performance.now();
+            const isInt = Number.isInteger(target);
+            function tick(now) {
+                const t = Math.min(1, (now - start) / duration);
+                const eased = 1 - Math.pow(1 - t, 3);
+                const v = target * eased;
+                el.textContent = isInt ? Math.floor(v) : v.toFixed(1);
+                if (t < 1) requestAnimationFrame(tick);
+                else el.textContent = target;
+            }
+            requestAnimationFrame(tick);
+        }
+
+        function initMagneticButtons() {
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+            document.querySelectorAll('.magnetic').forEach(btn => {
+                btn.addEventListener('mousemove', e => {
+                    const rect = btn.getBoundingClientRect();
+                    const x = e.clientX - rect.left - rect.width / 2;
+                    const y = e.clientY - rect.top - rect.height / 2;
+                    btn.style.transform = `translate(${x * 0.25}px, ${y * 0.4}px)`;
+                });
+                btn.addEventListener('mouseleave', () => { btn.style.transform = ''; });
+            });
+        }
+
         function applyInteractiveCardEffect() {
             document.addEventListener('mousemove', e => {
                 const cards = document.querySelectorAll('.interactive-card');
@@ -151,6 +183,7 @@
                         entry.target.querySelectorAll('.skill-bar-fill').forEach(bar => {
                             bar.style.width = bar.dataset.width + '%';
                         });
+                        entry.target.querySelectorAll('.stat-counter').forEach(animateCounter);
                         observer.unobserve(entry.target);
                     }
                 });
@@ -163,6 +196,7 @@
             initSectionReordering();
             initTypewriter();
             initActiveNavHighlight();
+            initMagneticButtons();
             updateCodeViewer();
             updateWCAG();
 
@@ -326,6 +360,10 @@
         @media (prefers-reduced-motion: reduce) {
             .typed-cursor { animation: none; }
         }
+        /* === MAGNETIC BUTTON === */
+        .magnetic { transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1); will-change: transform; }
+        @media (prefers-reduced-motion: reduce) { .magnetic { transition: none !important; transform: none !important; } }
+
         .skill-bar-track { width: 100%; background: rgba(0,0,0,0.08); border-radius: 9999px; height: 4px; overflow: hidden; margin-top: 6px; }
         .dark .skill-bar-track { background: rgba(255,255,255,0.12); }
         .skill-bar-fill { height: 100%; width: 0%; border-radius: 9999px; background: var(--color-accent); transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -563,7 +601,7 @@
                         <span id="typed-subtitle" data-text="{{ hero_subtitle }}"></span><span id="typed-cursor" class="typed-cursor" aria-hidden="true">|</span>
                     </p>
                     <p class="text-lg text-[var(--color-text-secondary)] max-w-2xl mb-8">{{ about_me }}</p>
-                    <a href="{{ pdf_url | default('resume.pdf') }}" target="_blank" class="inline-block px-6 py-3 rounded-lg bg-[var(--color-accent)] text-white font-semibold hover:bg-[var(--color-accent-hover)] transition-colors duration-300 shadow-lg">
+                    <a href="{{ pdf_url | default('resume.pdf') }}" target="_blank" class="magnetic inline-block px-6 py-3 rounded-lg bg-[var(--color-accent)] text-white font-semibold hover:bg-[var(--color-accent-hover)] transition-colors duration-300 shadow-lg">
                         Download Resume <i class="fas fa-download ml-2"></i>
                     </a>
                 </div>
@@ -571,6 +609,18 @@
                      <img src="{{ hero_image_url }}" alt="A picture of {{ copyright_name }}" class="rounded-full w-48 h-48 md:w-64 md:h-64 object-cover shadow-2xl border-4 border-white dark:border-gray-700 transform hover:scale-105 transition-transform duration-300">
                 </div>
             </div>
+            {% if stats %}
+            <div class="max-w-4xl mx-auto mt-20 flex flex-wrap justify-center gap-x-12 gap-y-8 relative z-10">
+                {% for stat in stats %}
+                <div class="stagger-item text-center min-w-[8rem]">
+                    <div class="font-heading text-4xl md:text-5xl font-bold text-[var(--color-accent)] tabular-nums">
+                        <span class="stat-counter" data-target="{{ stat.value }}">0</span>{% if stat.suffix %}{{ stat.suffix }}{% endif %}
+                    </div>
+                    <div class="text-sm uppercase tracking-wider text-[var(--color-text-secondary)] mt-2">{{ stat.label }}</div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
         </section>
 
         <section id="experience" class="py-24 px-4 fade-in-section">

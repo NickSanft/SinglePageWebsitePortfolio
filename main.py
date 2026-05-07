@@ -72,6 +72,11 @@ def load_data():
             "hero_subtitle": "Software Developer | Python & JavaScript Enthusiast",
             "hero_image_url": "https://placehold.co/256x256/e0e0e0/333333?text=You",
             "about_me": "Hello! I'm a software developer with a passion for building clean and efficient solutions. I specialize in web development and enjoy working with Python, JavaScript, and modern front-end frameworks. My goal is to create impactful and user-friendly applications.",
+            "stats": [
+                {"value": 5, "suffix": "+", "label": "Years Experience"},
+                {"value": 25, "suffix": "+", "label": "Projects Shipped"},
+                {"value": 10, "suffix": "+", "label": "Technologies"}
+            ],
             # === NEW: Professional framing for the interactive section ===
             "sandbox_title": "Interactive UI Sandbox",
             "sandbox_description": "This interactive sandbox showcases a range of front-end development skills. The theme customization is built with CSS variables and managed via JavaScript's localStorage for state persistence. The section reordering utilizes the SortableJS library and direct DOM manipulation to provide a dynamic user experience, complete with keyboard accessibility.",
@@ -192,7 +197,10 @@ def load_data():
     grouped_experience = []
     if "experience" in data:
         current_company = None
-        sorted_experience = sorted(data["experience"], key=lambda x: int(x['period'][:4]), reverse=True)
+        def _period_year(job):
+            m = re.search(r'\b(19|20)\d{2}\b', job.get('period', '') or '')
+            return int(m.group()) if m else 0
+        sorted_experience = sorted(data["experience"], key=_period_year, reverse=True)
         for job in sorted_experience:
             if job["company"] != current_company:
                 grouped_experience.append({"company": job["company"], "roles": []})
@@ -255,6 +263,25 @@ def serve_index():
     return render_template('index.html', static_root="/static/", pdf_url="/resume.pdf", tailwind_mode="cdn", **data)
 
 
+_FALLBACK_404_DATA = {
+    "website_title": "Page Not Found",
+    "theme_colors": {
+        "light": {"background": "#f9fafb", "text_primary": "#111827", "text_secondary": "#4b5563", "card_background": "#ffffff", "accent": "#2563eb", "accent_hover": "#1d4ed8"},
+        "dark":  {"background": "#111827", "text_primary": "#f9fafb", "text_secondary": "#d1d5db", "card_background": "#1f2937", "accent": "#93c5fd", "accent_hover": "#60a5fa"},
+    },
+}
+
+
+@app.errorhandler(404)
+def not_found(e):
+    try:
+        data = load_data()
+    except Exception as ex:
+        print(f"404 handler: load_data failed — {ex}")
+        data = _FALLBACK_404_DATA
+    return render_template('404.html', static_root="/static/", tailwind_mode="cdn", **data), 404
+
+
 @app.route("/resume.pdf")
 def serve_resume():
     from resume import generate_pdf, _load_data
@@ -309,15 +336,19 @@ def _get_tailwind_cli(static_dir):
     return cli_path
 
 
-def _build_tailwind_css(cli_path, content_html_path, output_css_path):
-    """Run the Tailwind CLI to generate a purged, minified CSS file."""
+def _build_tailwind_css(cli_path, content_html_paths, output_css_path):
+    """Run the Tailwind CLI to generate a purged, minified CSS file.
+    content_html_paths can be a single path or a list of paths."""
+    if isinstance(content_html_paths, str):
+        content_html_paths = [content_html_paths]
+    abs_paths = [os.path.abspath(p) for p in content_html_paths]
     config_js = os.path.join(os.path.dirname(output_css_path), "_tailwind_config.js")
     input_css = os.path.join(os.path.dirname(output_css_path), "_tailwind_input.css")
     try:
         with open(config_js, "w", encoding="utf-8") as f:
             f.write(f"""module.exports = {{
   darkMode: 'class',
-  content: [{json.dumps(os.path.abspath(content_html_path))}],
+  content: {json.dumps(abs_paths)},
   theme: {{
     extend: {{
       fontFamily: {{ sans: ['Inter', 'sans-serif'], heading: ['Poppins', 'sans-serif'] }},
@@ -405,30 +436,38 @@ def write_static_html():
     # --- Tailwind CSS build ---
     # Step 1: render with CDN mode so all class names are in the HTML for scanning
     scan_html_path = os.path.join(output_dir, "_scan.html")
+    scan_404_path = os.path.join(output_dir, "_scan_404.html")
     scan_html = render_template('index.html', static_root="static/", pdf_url="resume.pdf", tailwind_mode="cdn", **data)
+    scan_404 = render_template('404.html', static_root="static/", tailwind_mode="cdn", **data)
     with open(scan_html_path, "w", encoding="utf-8") as f:
         f.write(scan_html)
+    with open(scan_404_path, "w", encoding="utf-8") as f:
+        f.write(scan_404)
 
     tailwind_css_path = os.path.join(static_dir, "tailwind.css")
     tailwind_mode = "cdn"
     try:
         cli_path = _get_tailwind_cli(static_dir)
-        _build_tailwind_css(cli_path, scan_html_path, tailwind_css_path)
+        _build_tailwind_css(cli_path, [scan_html_path, scan_404_path], tailwind_css_path)
         tailwind_mode = "built"
     except Exception as e:
         print(f"Tailwind CLI build failed, falling back to CDN bundle: {e}")
     finally:
-        try:
-            os.remove(scan_html_path)
-        except OSError:
-            pass
+        for p in (scan_html_path, scan_404_path):
+            try:
+                os.remove(p)
+            except OSError:
+                pass
 
     # Step 2: render final HTML with the determined tailwind_mode
     rendered_for_file = render_template('index.html', static_root="static/", pdf_url="resume.pdf", tailwind_mode=tailwind_mode, **data)
+    rendered_404 = render_template('404.html', static_root="static/", tailwind_mode=tailwind_mode, **data)
 
     index_path = os.path.join(output_dir, "index.html")
     with open(index_path, "w", encoding="utf-8") as f:
         f.write(rendered_for_file)
+    with open(os.path.join(output_dir, "404.html"), "w", encoding="utf-8") as f:
+        f.write(rendered_404)
 
     # Export resume PDF
     try:

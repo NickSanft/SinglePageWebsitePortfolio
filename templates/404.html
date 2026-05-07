@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Not Found · {{ website_title }}</title>
+    <meta name="robots" content="noindex">
+    {% if tailwind_mode is defined and tailwind_mode == 'built' %}
+    <link rel="stylesheet" href="{{ static_root }}tailwind.css">
+    {% else %}
+    <script src="{{ static_root }}tailwindcss.js"></script>
+    {% endif %}
+    <link rel="icon" href="{{ static_root }}icon.png" type="image/x-icon">
+    <link rel="stylesheet" href="{{ static_root }}fontawesome-free-6.4.0-web/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+    <script>
+        if (typeof tailwind !== 'undefined') tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'], heading: ['Poppins', 'sans-serif'] } } }
+        };
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+    <style>
+        :root {
+            --color-background: {{ theme_colors.light.background }};
+            --color-text-primary: {{ theme_colors.light.text_primary }};
+            --color-text-secondary: {{ theme_colors.light.text_secondary }};
+            --color-card-background: {{ theme_colors.light.card_background }};
+            --color-accent: {{ theme_colors.light.accent }};
+            --color-accent-hover: {{ theme_colors.light.accent_hover }};
+        }
+        .dark {
+            --color-background: {{ theme_colors.dark.background }};
+            --color-text-primary: {{ theme_colors.dark.text_primary }};
+            --color-text-secondary: {{ theme_colors.dark.text_secondary }};
+            --color-card-background: {{ theme_colors.dark.card_background }};
+            --color-accent: {{ theme_colors.dark.accent }};
+            --color-accent-hover: {{ theme_colors.dark.accent_hover }};
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-text-primary);
+            margin: 0;
+        }
+        .hero-blob { position: absolute; border-radius: 9999px; filter: blur(72px); opacity: 0.18; pointer-events: none; }
+        .dark .hero-blob { opacity: 0.22; }
+        .hero-blob-1 { width: 45%; height: 65%; top: -15%; left: -8%; background: var(--color-accent); animation: blobDrift1 12s ease-in-out infinite alternate; }
+        .hero-blob-2 { width: 35%; height: 55%; bottom: -15%; right: 5%; background: var(--color-accent-hover); animation: blobDrift2 15s ease-in-out infinite alternate; }
+        @keyframes blobDrift1 { 0% { transform: translate(0,0) scale(1); } 100% { transform: translate(40px,-30px) scale(1.12); } }
+        @keyframes blobDrift2 { 0% { transform: translate(0,0) scale(1); } 100% { transform: translate(-30px,40px) scale(0.9); } }
+        @media (prefers-reduced-motion: reduce) { .hero-blob { animation: none !important; } .magnetic { transition: none !important; transform: none !important; } }
+        .magnetic { transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1); will-change: transform; }
+        .glitch-404 {
+            background: linear-gradient(135deg, var(--color-accent), var(--color-accent-hover));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            line-height: 1;
+        }
+    </style>
+</head>
+<body class="font-sans">
+    <main class="min-h-screen flex flex-col items-center justify-center px-4 text-center relative overflow-hidden">
+        <div class="hero-blob hero-blob-1" aria-hidden="true"></div>
+        <div class="hero-blob hero-blob-2" aria-hidden="true"></div>
+        <div class="relative z-10 max-w-xl">
+            <p class="font-heading text-9xl md:text-[10rem] font-bold glitch-404 select-none">404</p>
+            <h1 class="font-heading text-2xl md:text-3xl font-bold mt-2 mb-4 text-[var(--color-text-primary)]">Page not found</h1>
+            <p class="text-[var(--color-text-secondary)] mb-8">The page you're looking for doesn't exist or has moved. Let's get you back on track.</p>
+            <a href="/" class="magnetic inline-block px-6 py-3 rounded-lg bg-[var(--color-accent)] text-white font-semibold hover:bg-[var(--color-accent-hover)] transition-colors duration-300 shadow-lg">
+                <i class="fas fa-arrow-left mr-2"></i>Back to home
+            </a>
+        </div>
+    </main>
+    <script>
+        if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            document.querySelectorAll('.magnetic').forEach(btn => {
+                btn.addEventListener('mousemove', e => {
+                    const r = btn.getBoundingClientRect();
+                    btn.style.transform = `translate(${(e.clientX - r.left - r.width/2) * 0.25}px, ${(e.clientY - r.top - r.height/2) * 0.4}px)`;
+                });
+                btn.addEventListener('mouseleave', () => { btn.style.transform = ''; });
+            });
+        }
+    </script>
+</body>
+</html>
